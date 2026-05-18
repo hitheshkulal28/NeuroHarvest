@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-glass: var(--glass);
+  --color-text-main: var(--text-main);
+  --color-text-dim: var(--text-dim);
+  --color-border-subtle: var(--border-subtle);
+}
+
+:root {
+  /* NeuroHarvest Vibrant - Light */
+  --primary: #059669; /* Vibrant Emerald */
+  --primary-dark: #064e3b;
+  --primary-light: #34d399;
+  --accent: #f59e0b; /* Golden Harvest */
+  --accent-light: #fbbf24;
+  --surface: #ffffff;
+  --surface-hover: #f8fafc;
+  --glass: rgba(255, 255, 255, 0.9);
+  --text-main: #062016;
+  --text-dim: #475569;
+  --border-subtle: rgba(5, 150, 105, 0.1);
+}
+
+.dark {
+  /* NeuroHarvest Cinematic - Dark */
+  --primary: #10b981; /* Neon Growth */
+  --primary-dark: #064e3b;
+  --primary-light: #6ee7b7;
+  --accent: #fbbf24; /* Amber Glow */
+  --accent-light: #fcd34d;
+  --surface: #020617; /* Midnight Slate (High Contrast) */
+  --surface-hover: #0f172a;
+  --glass: rgba(15, 23, 42, 0.85);
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --border-subtle: rgba(16, 185, 129, 0.2);
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-text-main antialiased font-sans text-[14px] transition-colors duration-300;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight text-text-main;
+  }
+
+  h1 { @apply text-4xl; }
+  h2 { @apply text-3xl; }
+  h3 { @apply text-2xl; }
+}
+
+.glass-card {
+  @apply bg-glass backdrop-blur-xl border border-white/20 rounded-[2rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.08)] transition-all duration-500;
+}
+
+.dark .glass-card {
+  @apply border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.4)];
+}
+
+.glass-card:hover {
+  @apply shadow-[0_20px_40px_0_rgba(22,101,52,0.1)] border-white/20 -translate-y-1 scale-[1.01];
+}
+
+.premium-shadow {
+  @apply shadow-[0_20px_50px_rgba(0,0,0,0.03)];
+}
+
+.sidebar-link {
+  @apply flex items-center gap-4 px-5 py-4 rounded-2xl text-text-dim hover:text-text-main hover:bg-surface-hover transition-all duration-300 font-bold tracking-wide;
+}
+
+.sidebar-link-active {
+  @apply bg-primary text-white shadow-xl shadow-primary/20 border-r-4 border-accent-light;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-primary to-primary-light font-black;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-surface;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/20 rounded-full hover:bg-primary/40 transition-colors;
+}

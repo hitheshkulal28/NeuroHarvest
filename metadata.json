@@ -1,0 +1,8 @@
+{
+  "name": "Krishiyabhivruddhi",
+  "description": "Smart Crop Health Monitor - A modern dashboard for real-time agricultural sensor data including soil moisture, NPK levels, and ambient temperature.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
