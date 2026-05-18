@@ -445,7 +445,7 @@ Provide the output EXACTLY in this markdown structure, keeping the header titles
 ### Immediate Treatment Measures
 ### Prevention Tips`;
 
-      const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
       if (!apiKey) {
         throw new Error("Missing VITE_GEMINI_API_KEY in .env");
       }
@@ -1132,7 +1132,7 @@ const SmartFarm = ({ data, history, sevenDayHistory, t, weather, language }: { d
             </div>
           </div>
           <div className="h-[300px]">
-            <ChartLine data={chartData} options={chartOptions} />
+            <ChartLine data={chartData} options={chartOptions as any} />
           </div>
         </div>
       </div>

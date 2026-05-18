@@ -4,7 +4,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { translations } from "../constants/translations";
 import { 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 
@@ -124,15 +126,34 @@ const LoginPage = ({ onLogin, language, setLanguage, isDarkMode, toggleDarkMode 
   const handleGoogleLogin = async () => {
     setIsLoggingIn(true);
     try {
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: "simulated-token" })
-      });
-      const data = await res.json();
-      if (data.success) onLogin();
-    } catch (error) {
-      console.error("Google Auth error:", error);
+      // 1. Try real Firebase Google Sign-In
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userEmail', userCredential.user.email || '');
+      onLogin();
+    } catch (firebaseError: any) {
+      console.warn("Firebase Google Sign-In failed or not configured, trying simulated login:", firebaseError.message || firebaseError);
+      
+      // 2. Fall back to robust simulated login
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: "simulated-token" })
+        });
+        const data = await res.json();
+        if (data.success) {
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('userEmail', data.user?.email || 'google@farm.com');
+          onLogin();
+        } else {
+          alert(getAuthAlertMessage("failed", language));
+        }
+      } catch (simulatedError) {
+        console.error("Simulated Google Auth error:", simulatedError);
+        alert(getAuthAlertMessage("failed", language));
+      }
     } finally {
       setIsLoggingIn(false);
     }

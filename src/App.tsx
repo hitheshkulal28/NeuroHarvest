@@ -56,7 +56,11 @@ export default function App() {
             <Dashboard
               language={language}
               setLanguage={setLanguage}
-              onLogout={() => setIsAuthenticated(false)}
+              onLogout={() => {
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('userEmail');
+                setIsAuthenticated(false);
+              }}
               isDarkMode={isDarkMode}
               toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
             />
