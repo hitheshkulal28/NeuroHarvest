@@ -1,7 +1,7 @@
 # NeuroHarvest
 
 <div align="center">
-  <img width="1200" height="475" alt="NeuroHarvest Project Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img width="800" alt="NeuroHarvest Logo" src="./public/assets/logo.png" />
 </div>
 
 An advanced, full-stack Agritech platform designed to empower farmers with intelligent ecosystem analytics, cloud-based computer vision diagnostics, and real-time agricultural market insights. **NeuroHarvest** bridges the gap between low-level hardware telemetry and modern web architecture.
