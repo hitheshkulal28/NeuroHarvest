@@ -91,7 +91,7 @@ const generateHistory = () => {
   return days.map(day => ({
     day,
     moisture: 40 + Math.random() * 30,
-    temp: 20 + Math.random() * 10,
+    temp: Math.round((20 + Math.random() * 10) * 10) / 10,
     waterUsage: 5 + Math.random() * 15
   }));
 };
@@ -107,7 +107,7 @@ setInterval(() => {
       phosphorus: Math.max(0, sensorData.npk.phosphorus + (Math.random() - 0.5) * 1),
       potassium: Math.max(0, sensorData.npk.potassium + (Math.random() - 0.5) * 1)
     },
-    temperature: sensorData.temperature + (Math.random() - 0.5) * 0.5,
+    temperature: Math.round((sensorData.temperature + (Math.random() - 0.5) * 0.5) * 10) / 10,
     humidity: Math.max(0, Math.min(100, sensorData.humidity + (Math.random() - 0.5) * 2)),
     waterUsage: Math.max(0, sensorData.waterUsage + (Math.random() - 0.5) * 5),
     timestamp: new Date().toISOString()

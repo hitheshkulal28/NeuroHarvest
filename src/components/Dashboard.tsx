@@ -1321,8 +1321,8 @@ export default function Dashboard({
       setHistory(prev => {
         const newPoint = {
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-          moisture: json.soilMoisture,
-          temp: json.temperature
+          moisture: Math.round(json.soilMoisture * 10) / 10,
+          temp: Math.round(json.temperature * 10) / 10
         };
         const updated = [...prev, newPoint].slice(-10);
         return updated;
@@ -1353,7 +1353,7 @@ export default function Dashboard({
 
   const downloadReport = () => {
     if (!data) return;
-    const reportText = `Report for ${new Date().toLocaleString()}\nMoisture: ${data.soilMoisture}%\nTemp: ${data.temperature}°C`;
+    const reportText = `Report for ${new Date().toLocaleString()}\nMoisture: ${(data.soilMoisture ?? 0).toFixed(1)}%\nTemp: ${(data.temperature ?? 0).toFixed(1)}°C`;
     const blob = new Blob([reportText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
