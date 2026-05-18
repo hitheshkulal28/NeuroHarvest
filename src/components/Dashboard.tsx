@@ -253,7 +253,7 @@ const WeatherForecast = ({ t, weather }: { t: any, weather: any }) => {
           </div>
 
           <div className="flex items-end gap-4 mb-8 relative z-10">
-            <span className="text-7xl font-black text-text-main tracking-tighter">{weather.temp}°</span>
+            <span className="text-7xl font-black text-text-main tracking-tighter">{Math.round(weather.temp)}°</span>
             <div className="mb-2">
               <p className="text-xl font-black text-text-main leading-none">{weather.condition}</p>
               <p className="text-xs font-bold text-text-dim mt-1 uppercase tracking-widest">{t.currentCondition}</p>
@@ -289,7 +289,7 @@ const WeatherForecast = ({ t, weather }: { t: any, weather: any }) => {
                     day.condition.includes('Rain') ? <CloudRain className="w-6 h-6 text-primary" /> :
                       <Sun className="w-6 h-6 text-accent" />}
                 </div>
-                <p className="text-lg font-black text-text-main tracking-tighter">{day.temp}°</p>
+                <p className="text-lg font-black text-text-main tracking-tighter">{Math.round(day.temp)}°</p>
               </div>
             ))}
           </div>

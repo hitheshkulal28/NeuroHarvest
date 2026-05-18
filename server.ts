@@ -115,7 +115,7 @@ setInterval(() => {
   
   // Slowly vary weather only if live data is not available
   if (!WEATHER_API_KEY || WEATHER_API_KEY.includes("your_actual")) {
-    weatherData.temp = Math.max(15, Math.min(45, weatherData.temp + (Math.random() - 0.5) * 0.2));
+    weatherData.temp = Math.round(Math.max(15, Math.min(45, weatherData.temp + (Math.random() - 0.5) * 0.2)));
   }
 }, 3000);
 
