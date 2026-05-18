@@ -1,25 +1,49 @@
-<<<<<<< HEAD
+# NeuroHarvest
+
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img width="1200" height="475" alt="NeuroHarvest Project Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+An advanced, full-stack Agritech platform designed to empower farmers with intelligent ecosystem analytics, cloud-based computer vision diagnostics, and real-time agricultural market insights. **NeuroHarvest** bridges the gap between low-level hardware telemetry and modern web architecture.
 
-This contains everything you need to run your app locally.
+## 🚀 Core Features
 
-View your app in AI Studio: https://ai.studio/apps/801bdb57-df32-4979-970f-852f258090f0
+* **Crop Doctor (AI Diagnostics):** Integrated with Google Gemini 1.5 Flash (Multimodal Vision API). Allows users to upload or capture images of infected plant foliage to receive an immediate pathological diagnosis, breakdown of active symptoms, treatment routines, and preventative guidance.
+* **Mandi Bhav (Live Market Rates):** Powered by direct data streams from the Open Government Data (OGD) Platform India (Agmarknet dataset). Displays daily modal commodity pricing, regional trade variations, and market volume arrivals specifically filtered for trading hubs in Karnataka.
+* **Smart Farm Analytics Grid:** A sleek dashboard tracking local microclimate variations (Ambient Temperature, Humidity) alongside primary soil characteristics (Moisture metrics and NPK nutrient profiles). Built to scale into a centralized gateway for remote hardware endpoints.
+* **Localization Matrix:** Features local translation pipelines supporting English, Kannada, and localized Tulu language registers to make automated technical data accessible to native farmers.
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## 🛠️ Tech Stack
 
+* **Frontend Framework:** React.js, TypeScript, Vite, Tailwind CSS
+* **Backend Runtime:** Node.js, Express.js
+* **Cognitive Processing Engine:** Google Gemini 1.5 Flash (Generative AI Architecture)
+* **Telemetry Data Sources:** Data.gov.in (APMC API), OpenWeatherMap API
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
-=======
-# NeuroHarvest
-A website to check the health of crop along with many other features
->>>>>>> 5df2194b266ffa4cf1fb24b7dfedcb5700714e8f
+---
+
+## 📦 Local Installation & Setup
+
+### Prerequisites
+Make sure your machine has **Node.js** (LTS version recommended) installed.
+
+### Step-by-Step Guide
+
+1. **Clone the repository and install the project nodes:**
+   ```bash
+   npm install
+2. **Configure Your Environment Variables:**
+Create a dedicated .env file in the root project folder and add your verified API credentials:
+
+# API Keys Configuration Matrix
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+VITE_GOI_DATA_API_KEY=your_data_gov_in_api_key_here
+VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
+Boot Up the Local Development Server:
+
+Bash
+npm run dev
+Launch the Dashboard:
+Open your browser and navigate to the address displayed in your terminal (typically http://localhost:3000 or http://localhost:5173).
