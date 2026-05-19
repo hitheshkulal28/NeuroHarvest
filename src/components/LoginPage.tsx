@@ -238,10 +238,10 @@ const LoginPage = ({ onLogin, language, setLanguage, isDarkMode, toggleDarkMode 
         {/* Right Side: Form */}
         <div className="w-full md:w-7/12 p-8 md:p-12 flex flex-col justify-center bg-white/40 dark:bg-stone-900/40 backdrop-blur-sm relative">
           {/* Top Controls */}
-          <div className="absolute top-8 right-8 flex items-center gap-4">
+          <div className="absolute top-4 right-4 md:top-8 md:right-8 flex items-center gap-2 md:gap-4 z-20">
             <button
               onClick={toggleDarkMode}
-              className="p-3 rounded-2xl bg-surface hover:bg-surface-hover transition-all border border-border-subtle shadow-sm group"
+              className="p-2.5 md:p-3 rounded-2xl bg-surface hover:bg-surface-hover transition-all border border-border-subtle shadow-sm group"
               aria-label="Toggle Theme"
             >
               {isDarkMode ? <Sun className="w-5 h-5 text-primary" /> : <Moon className="w-5 h-5 text-accent" />}
@@ -250,10 +250,11 @@ const LoginPage = ({ onLogin, language, setLanguage, isDarkMode, toggleDarkMode 
             <div className="relative">
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-surface hover:bg-surface-hover transition-all text-sm font-black text-text-main border border-border-subtle shadow-sm group"
+                className="flex items-center gap-2 md:gap-3 px-3 py-2.5 md:px-5 md:py-3 rounded-2xl bg-surface hover:bg-surface-hover transition-all text-xs md:text-sm font-black text-text-main border border-border-subtle shadow-sm group"
               >
-                <Globe className="w-5 h-5 text-primary group-hover:rotate-12 transition-transform" />
-                {language}
+                <Globe className="w-4 h-4 md:w-5 h-5 text-primary group-hover:rotate-12 transition-transform" />
+                <span className="hidden sm:inline">{language}</span>
+                <span className="sm:hidden">{language.substring(0, 2).toUpperCase()}</span>
               </button>
               <AnimatePresence>
                 {isLangOpen && (
@@ -261,7 +262,7 @@ const LoginPage = ({ onLogin, language, setLanguage, isDarkMode, toggleDarkMode 
                     initial={{ opacity: 0, y: 15, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                    className="absolute right-0 mt-4 w-56 bg-surface rounded-[2rem] shadow-2xl border border-border-subtle overflow-hidden z-50 p-2"
+                    className="absolute right-0 mt-4 w-40 sm:w-56 bg-surface rounded-[2rem] shadow-2xl border border-border-subtle overflow-hidden z-50 p-2"
                   >
                     {languages.map((lang) => (
                       <button
@@ -270,7 +271,7 @@ const LoginPage = ({ onLogin, language, setLanguage, isDarkMode, toggleDarkMode 
                           setLanguage(lang);
                           setIsLangOpen(false);
                         }}
-                        className={`w-full text-left px-5 py-3.5 text-sm font-bold rounded-2xl transition-all ${language === lang ? 'text-primary bg-primary/10' : 'text-text-dim hover:bg-surface-hover'}`}
+                        className={`w-full text-left px-5 py-3 text-xs sm:text-sm font-bold rounded-2xl transition-all ${language === lang ? 'text-primary bg-primary/10' : 'text-text-dim hover:bg-surface-hover'}`}
                       >
                         {lang}
                       </button>

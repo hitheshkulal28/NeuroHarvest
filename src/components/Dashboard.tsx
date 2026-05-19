@@ -28,7 +28,8 @@ import {
   CloudSun,
   CloudRain,
   Sun,
-  Moon
+  Moon,
+  Menu
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { translations } from "../constants/translations";
@@ -239,7 +240,7 @@ const WeatherForecast = ({ t, weather }: { t: any, weather: any }) => {
     >
       <div className="flex flex-col lg:flex-row">
         {/* Left: Current Weather */}
-        <div className="lg:w-1/3 p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent relative overflow-hidden">
+        <div className="lg:w-1/3 p-6 lg:p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-[60px]" />
 
           <div className="flex items-center justify-between mb-8 relative z-10">
@@ -279,10 +280,10 @@ const WeatherForecast = ({ t, weather }: { t: any, weather: any }) => {
         </div>
 
         {/* Right: 5-Day Forecast */}
-        <div className="lg:w-2/3 p-8 flex flex-col justify-center">
-          <div className="grid grid-cols-5 gap-4">
+        <div className="lg:w-2/3 p-6 lg:p-8 flex flex-col justify-center overflow-hidden">
+          <div className="flex overflow-x-auto lg:grid lg:grid-cols-5 gap-4 pb-2 scrollbar-none snap-x snap-mandatory">
             {weather.forecast.map((day: any, idx: number) => (
-              <div key={idx} className="p-4 rounded-[2rem] bg-surface-hover border border-border-subtle flex flex-col items-center gap-3 transition-all hover:scale-105 hover:bg-slate-100 dark:hover:bg-slate-800 hover:shadow-xl group/day">
+              <div key={idx} className="p-4 rounded-[2rem] bg-surface-hover border border-border-subtle flex flex-col items-center gap-3 transition-all hover:scale-105 hover:bg-slate-100 dark:hover:bg-slate-800 hover:shadow-xl group/day shrink-0 w-[100px] lg:w-auto snap-start">
                 <p className="text-xs font-black text-text-dim uppercase tracking-widest group-hover/day:text-primary transition-colors">{day.day}</p>
                 <div className="p-3 bg-white dark:bg-surface rounded-2xl shadow-sm border border-border-subtle">
                   {day.condition.includes('Cloud') ? <Cloud className="w-6 h-6 text-slate-400" /> :
@@ -297,7 +298,7 @@ const WeatherForecast = ({ t, weather }: { t: any, weather: any }) => {
       </div>
     </motion.div>
   );
-};
+};;
 
 const fileToGenerativePart = async (file: File) => {
   return new Promise<{ inlineData: { data: string; mimeType: string } }>((resolve, reject) => {
@@ -539,7 +540,7 @@ Provide the output EXACTLY in this markdown structure, keeping the header titles
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-12">
+    <div className="p-4 lg:p-8 max-w-5xl mx-auto space-y-6 lg:space-y-12">
       <div>
         <h2 className="text-2xl font-bold text-text-main">{t.cropDoctor}</h2>
         <p className="text-text-dim mt-1">{t.professionalDiagnosis}</p>
@@ -946,7 +947,7 @@ const SmartFarm = ({ data, history, sevenDayHistory, t, weather, language }: { d
   insectRisk = Math.min(insectRisk, 100);
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-text-main">{t.smartFarm}</h2>
@@ -1204,7 +1205,7 @@ const MandiBhav = ({ t, language }: { t: any, language: string }) => {
   }, []);
 
   return (
-    <div className="p-8">
+    <div className="p-4 lg:p-8">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-text-main">{t.mandiPrices}</h2>
         <p className="text-text-main font-bold mt-1">{t.marketArrivals}</p>
@@ -1217,7 +1218,7 @@ const MandiBhav = ({ t, language }: { t: any, language: string }) => {
             <p className="text-text-dim font-bold uppercase tracking-widest text-xs">{getLoadingText(language)}</p>
           </div>
         ) : (
-          <div className="overflow-y-auto w-full custom-scrollbar">
+          <div className="overflow-x-auto overflow-y-auto w-full custom-scrollbar">
             <table className="w-full text-left border-collapse relative">
               <thead className="bg-slate-900 sticky top-0 z-10 shadow-md">
                 <tr>
@@ -1290,6 +1291,79 @@ export default function Dashboard({
   });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState(userProfile);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const renderSidebarContent = (isMobile = false) => {
+    return (
+      <>
+        <div className="p-10 mb-6 flex justify-between items-center">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-[#0a1118] border border-white/10 rounded-2xl flex items-center justify-center overflow-hidden p-1.5 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <img src="/logo.png" alt="NeuroHarvest Logo" className="w-full h-full object-contain drop-shadow-md" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black tracking-tighter leading-none text-white">{t.portalName?.toUpperCase() || 'NEUROHARVEST'}</h1>
+              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] mt-1">{t.advancedAgTech}</p>
+            </div>
+          </div>
+          {isMobile && (
+            <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-all" aria-label="Close sidebar">
+              <X className="w-6 h-6 text-slate-400 hover:text-white" />
+            </button>
+          )}
+        </div>
+
+        <nav className="flex-1 px-6 space-y-4">
+          {[
+            { id: 'dashboard', icon: LayoutDashboard, label: t.dashboard },
+            { id: 'doctor', icon: Stethoscope, label: t.cropDoctor },
+            { id: 'mandi', icon: LayoutGrid, label: t.mandiBhav },
+            { id: 'smartfarm', icon: Sprout, label: t.smartFarm },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id as any);
+                if (isMobile) setIsMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 ${activeTab === item.id ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
+            >
+              <item.icon className={`w-6 h-6 transition-transform duration-500 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
+              <span className="text-base font-black tracking-tight">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-8 mt-auto">
+          <div className="p-5 bg-slate-800 rounded-3xl mb-8 relative group">
+            <button
+              onClick={() => { setEditingProfile(userProfile); setIsProfileModalOpen(true); if (isMobile) setIsMobileMenuOpen(false); }}
+              className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+              title={t.editProfile || "Edit Profile"}
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-slate-700 rounded-2xl flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-black text-white truncate">{userProfile.username}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 truncate">{userProfile.location}</p>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center justify-center gap-4 px-6 py-4.5 text-sm font-black text-white bg-slate-800 hover:bg-red-700 transition-all rounded-2xl group"
+          >
+            <X className="w-5 h-5 group-hover:rotate-90 transition-transform text-red-500" />
+            <span className="tracking-widest">{t.signOut}</span>
+          </button>
+        </div>
+      </>
+    );
+  };
 
   const handleSaveProfile = () => {
     setUserProfile(editingProfile);
@@ -1382,96 +1456,73 @@ export default function Dashboard({
 
   return (
     <div className="flex h-screen bg-surface dark:bg-surface transition-colors duration-500">
-      <aside className="w-[300px] bg-slate-900 text-white flex flex-col shrink-0">
-        <div className="p-10 mb-6">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-[#0a1118] border border-white/10 rounded-2xl flex items-center justify-center overflow-hidden p-1.5 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-              <img src="/logo.png" alt="NeuroHarvest Logo" className="w-full h-full object-contain drop-shadow-md" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black tracking-tighter leading-none text-white">{t.portalName?.toUpperCase() || 'NEUROHARVEST'}</h1>
-              <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.3em] mt-1">{t.advancedAgTech}</p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-6 space-y-4">
-          {[
-            { id: 'dashboard', icon: LayoutDashboard, label: t.dashboard },
-            { id: 'doctor', icon: Stethoscope, label: t.cropDoctor },
-            { id: 'mandi', icon: LayoutGrid, label: t.mandiBhav },
-            { id: 'smartfarm', icon: Sprout, label: t.smartFarm },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 ${activeTab === item.id ? 'bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20' : 'text-slate-400 hover:bg-white/5 hover:text-white'}`}
-            >
-              <item.icon className={`w-6 h-6 transition-transform duration-500 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
-              <span className="text-base font-black tracking-tight">{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className="p-8 mt-auto">
-          <div className="p-5 bg-slate-800 rounded-3xl mb-8 relative group">
-            <button
-              onClick={() => { setEditingProfile(userProfile); setIsProfileModalOpen(true); }}
-              className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
-              title={t.editProfile || "Edit Profile"}
-            >
-              <Settings className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-slate-700 rounded-2xl flex items-center justify-center">
-                <User className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-black text-white truncate">{userProfile.username}</p>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5 truncate">{userProfile.location}</p>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center justify-center gap-4 px-6 py-4.5 text-sm font-black text-white bg-slate-800 hover:bg-red-700 transition-all rounded-2xl group"
-          >
-            <X className="w-5 h-5 group-hover:rotate-90 transition-transform text-red-500" />
-            <span className="tracking-widest">{t.signOut}</span>
-          </button>
-        </div>
+      <aside className="hidden lg:flex w-[300px] bg-slate-900 text-white flex-col shrink-0">
+        {renderSidebarContent(false)}
       </aside>
+
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <div className="lg:hidden fixed inset-0 z-50">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.4 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            {/* Drawer */}
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="absolute top-0 bottom-0 left-0 w-[300px] bg-slate-900 text-white flex flex-col shadow-2xl overflow-y-auto"
+            >
+              {renderSidebarContent(true)}
+            </motion.aside>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
-        <header className="h-24 bg-surface/80 backdrop-blur-2xl border-b border-border-subtle flex items-center justify-between px-10 sticky top-0 z-40 transition-colors duration-500">
-          <div className="flex items-center gap-8">
+        <header className="h-20 lg:h-24 bg-surface/80 backdrop-blur-2xl border-b border-border-subtle flex items-center justify-between px-4 lg:px-10 sticky top-0 z-40 transition-colors duration-500">
+          <div className="flex items-center gap-4 lg:gap-8">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden p-3 rounded-2xl bg-surface-hover hover:bg-primary/10 border border-border-subtle transition-all"
+              aria-label="Open Navigation Menu"
+            >
+              <Menu className="w-6 h-6 text-text-main" />
+            </button>
             <div>
-              <h2 className="text-3xl font-black text-text-main tracking-tighter">{activeTab.toUpperCase()}</h2>
-              <div className="flex items-center gap-2 mt-1">
+              <h2 className="text-xl lg:text-3xl font-black text-text-main tracking-tighter leading-none">{activeTab.toUpperCase()}</h2>
+              <div className="flex items-center gap-2 mt-1.5">
                 <div className="w-1.5 h-1.5 bg-primary-light rounded-full animate-pulse" />
-                <p className="text-[10px] font-black text-text-dim uppercase tracking-[0.2em]">{currentTime}</p>
+                <p className="text-[9px] lg:text-[10px] font-black text-text-dim uppercase tracking-[0.2em]">{currentTime}</p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 lg:gap-6">
             {/* Theme Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-3.5 rounded-2xl bg-surface-hover hover:bg-primary/10 transition-all border border-border-subtle group"
+              className="p-2.5 lg:p-3.5 rounded-2xl bg-surface-hover hover:bg-primary/10 transition-all border border-border-subtle group"
               aria-label="Toggle Theme"
             >
-              {isDarkMode ? <Sun className="w-6 h-6 text-primary" /> : <Moon className="w-6 h-6 text-accent" />}
+              {isDarkMode ? <Sun className="w-5 h-5 lg:w-6 h-6 text-primary" /> : <Moon className="w-5 h-5 lg:w-6 h-6 text-accent" />}
             </button>
 
             <div className="relative">
               <button
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-surface-hover border border-border-subtle text-sm font-black text-text-main transition-all hover:shadow-xl hover:-translate-y-0.5 group"
+                className="flex items-center gap-2 px-3 py-2.5 lg:px-6 lg:py-3.5 rounded-2xl bg-surface-hover border border-border-subtle text-xs lg:text-sm font-black text-text-main transition-all hover:shadow-xl hover:-translate-y-0.5 group"
               >
-                <Globe className="w-5 h-5 text-primary group-hover:rotate-12 transition-transform" />
-                {language}
+                <Globe className="w-4 h-4 lg:w-5 h-5 text-primary group-hover:rotate-12 transition-transform" />
+                <span className="hidden sm:inline">{language}</span>
+                <span className="sm:hidden">{language.substring(0, 2).toUpperCase()}</span>
               </button>
               <AnimatePresence>
                 {isLangOpen && (
@@ -1479,7 +1530,7 @@ export default function Dashboard({
                     initial={{ opacity: 0, y: 15, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                    className="absolute right-0 mt-4 w-56 bg-surface rounded-[2rem] shadow-2xl border border-border-subtle overflow-hidden z-50 p-2"
+                    className="absolute right-0 mt-4 w-40 sm:w-56 bg-surface rounded-[2rem] shadow-2xl border border-border-subtle overflow-hidden z-50 p-2"
                   >
                     {languages.map((lang) => (
                       <button
@@ -1488,7 +1539,7 @@ export default function Dashboard({
                           setLanguage(lang);
                           setIsLangOpen(false);
                         }}
-                        className={`w-full text-left px-5 py-3.5 text-sm font-bold rounded-2xl transition-all ${language === lang ? 'text-primary bg-primary/10' : 'text-text-dim hover:bg-surface-hover'}`}
+                        className={`w-full text-left px-5 py-3 text-xs sm:text-sm font-bold rounded-2xl transition-all ${language === lang ? 'text-primary bg-primary/10' : 'text-text-dim hover:bg-surface-hover'}`}
                       >
                         {lang}
                       </button>
@@ -1498,7 +1549,7 @@ export default function Dashboard({
               </AnimatePresence>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-4">
               <button onClick={fetchData} className="p-3.5 text-text-dim hover:text-primary hover:bg-primary/10 rounded-2xl transition-all active:scale-95 border border-border-subtle shadow-sm">
                 <RefreshCcw className="w-6 h-6" />
               </button>
@@ -1512,9 +1563,10 @@ export default function Dashboard({
 
             <button
               onClick={downloadReport}
-              className="bg-primary text-white px-8 py-3.5 rounded-2xl text-sm font-black hover:bg-primary-dark transition-all shadow-2xl shadow-primary/30 active:scale-95 uppercase"
+              className="bg-primary text-white px-4 py-2.5 lg:px-8 lg:py-3.5 rounded-2xl text-xs lg:text-sm font-black hover:bg-primary-dark transition-all shadow-2xl shadow-primary/30 active:scale-95 uppercase"
             >
-              {t.report || 'EXPORT REPORT'}
+              <span className="hidden sm:inline">{t.report || 'EXPORT REPORT'}</span>
+              <span className="sm:hidden">{t.report ? t.report.split(' ')[0] : 'EXPORT'}</span>
             </button>
           </div>
         </header>
@@ -1527,9 +1579,9 @@ export default function Dashboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="p-8 space-y-6"
+                className="p-4 lg:p-8 space-y-4 lg:space-y-6"
               >
-                <div className="grid grid-cols-12 gap-10">
+                <div className="grid grid-cols-12 gap-4 lg:gap-10">
                   {/* Weather Forecast - Prominent placement */}
                   <div className="col-span-12">
                     <WeatherForecast t={t} weather={weather} />
