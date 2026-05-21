@@ -435,36 +435,23 @@ const CropDoctor = ({ language, t, diagnosisHistory, setDiagnosisHistory }: { la
     try {
       const imagePart = await fileToGenerativePart(file);
       const languageName = language === 'Tulu' ? 'Tulu (written in Kannada script)' : language;
+      const base64Image = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
 
-      const prompt = `You are an expert plant pathologist operating in Karnataka. Analyze this crop image. 
-If the crop shows any signs of damage, browning, yellowing, spots, or stress, it is UNHEALTHY. You must diagnose the specific disease or physiological condition (e.g., Potassium Deficiency, Leaf Scorch, Drought Stress, etc.). Never label a damaged leaf as 'Healthy' or 'Unknown'.
-
-Provide the output EXACTLY in this markdown structure, keeping the header titles strictly in English so they can be parsed, but write all the text content, diagnoses, and descriptions below them entirely in the ${languageName} language:
-### Disease/Condition Name
-### Confidence Score
-### Core Symptoms
-### Immediate Treatment Measures
-### Prevention Tips`;
-
-      const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error("Missing VITE_GEMINI_API_KEY in .env");
-      }
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      const response = await fetch("/api/diagnose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }, imagePart] }]
+          image: base64Image,
+          language: languageName
         })
       });
 
       const data = await response.json();
       if (data.error) {
-        throw new Error(data.error.message);
+        throw new Error(data.error);
       }
 
-      const resultText = data.candidates[0].content.parts[0].text;
+      const resultText = data.text;
       setAnalysis(resultText);
 
       const parsed = parseAnalysis(resultText);

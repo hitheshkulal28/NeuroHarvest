@@ -69,6 +69,8 @@ async function fetchLiveWeather() {
           condition: f.weather[0].main
         }))
       };
+      // Sync sensorData.temperature with live weather data initially
+      sensorData.temperature = weatherData.temp;
       console.log(`Live weather updated for ${CITY}: ${weatherData.temp}°C, ${weatherData.condition}`);
     } else {
       console.error("Weather API Error:", data.message);
@@ -107,7 +109,7 @@ setInterval(() => {
       phosphorus: Math.max(0, sensorData.npk.phosphorus + (Math.random() - 0.5) * 1),
       potassium: Math.max(0, sensorData.npk.potassium + (Math.random() - 0.5) * 1)
     },
-    temperature: Math.round((sensorData.temperature + (Math.random() - 0.5) * 0.5) * 10) / 10,
+    temperature: Math.round((weatherData.temp + (Math.random() - 0.5) * 1.5) * 10) / 10,
     humidity: Math.max(0, Math.min(100, sensorData.humidity + (Math.random() - 0.5) * 2)),
     waterUsage: Math.max(0, sensorData.waterUsage + (Math.random() - 0.5) * 5),
     timestamp: new Date().toISOString()
@@ -133,20 +135,20 @@ async function startServer() {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: [
           {
             parts: [
               {
-                text: `Analyze this image of a plant leaf for any pests or diseases (like Leaf Blast, Rust, etc.). 
-                Provide a diagnosis and recommended treatments (both Organic and Chemical). 
-                The response MUST be in the following language: ${language}.
-                Return the results in a structured JSON format with the following keys:
-                - diagnosis: A string stating the disease or pest found (or "Healthy" if none).
-                - confidence: A percentage (0-100).
-                - organicTreatment: A string describing organic solutions.
-                - chemicalTreatment: A string describing chemical solutions.
-                - language: The language used.`
+                text: `You are an expert plant pathologist operating in Karnataka. Analyze this crop image. 
+If the crop shows any signs of damage, browning, yellowing, spots, or stress, it is UNHEALTHY. You must diagnose the specific disease or physiological condition (e.g., Potassium Deficiency, Leaf Scorch, Drought Stress, etc.). Never label a damaged leaf as 'Healthy' or 'Unknown'.
+
+Provide the output EXACTLY in this markdown structure, keeping the header titles strictly in English so they can be parsed, but write all the text content, diagnoses, and descriptions below them entirely in the ${language} language:
+### Disease/Condition Name
+### Confidence Score
+### Core Symptoms
+### Immediate Treatment Measures
+### Prevention Tips`
               },
               {
                 inlineData: {
@@ -156,23 +158,10 @@ async function startServer() {
               }
             ]
           }
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              diagnosis: { type: Type.STRING },
-              confidence: { type: Type.NUMBER },
-              organicTreatment: { type: Type.STRING },
-              chemicalTreatment: { type: Type.STRING },
-              language: { type: Type.STRING }
-            }
-          }
-        }
+        ]
       });
 
-      res.json(JSON.parse(response.text));
+      res.json({ text: response.text });
     } catch (error) {
       console.error("Diagnosis error:", error);
       res.status(500).json({ error: "Analysis failed" });
