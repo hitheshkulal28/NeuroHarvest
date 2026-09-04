@@ -104,7 +104,21 @@ export const translations: Record<string, any> = {
     location: "Location",
     majorCrop: "Major Crop",
     save: "Save",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    notifications: "Agricultural Alerts",
+    noNotifications: "No active agricultural alerts",
+    markAllRead: "Mark all as read",
+    clearAll: "Clear notifications",
+    soilMoistureAlert: "Low Soil Moisture Warning",
+    soilMoistureDesc: "Moisture level dropped to critical threshold. Immediate irrigation recommended.",
+    pestRiskAlert: "High Fungal Spore Warning",
+    pestRiskDesc: "High microclimate humidity detected. Fungal spore germination risk elevated.",
+    marketPriceAlert: "Mandi Price Surge",
+    marketPriceDesc: "Arecanut prices increased by +3.2% in Mangalore hub today.",
+    weatherAlert: "Rainfall Expected",
+    weatherDesc: "Precipitation expected in the next 24 hours. Hold off on fertilizer application.",
+    npkAlert: "Nitrogen Deficiency",
+    npkDesc: "Nitrogen level is below 40 ppm. Consider adding organic compost or urea."
   },
   Kannada: {
     dashboard: "ಮುಖಪುಟ",

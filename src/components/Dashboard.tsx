@@ -29,10 +29,16 @@ import {
   CloudRain,
   Sun,
   Moon,
-  Menu
+  Menu,
+  Check,
+  Trash2,
+  BellRing,
+  Sparkles,
+  TrendingUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { translations } from "../constants/translations";
+import { SensorData, ChartDataPoint, NotificationItem } from "../types";
 
 const speak = (text: string, language: string) => {
   const synth = window.speechSynthesis;
@@ -82,7 +88,7 @@ ChartJS.register(
   Filler
 );
 
-import { SensorData, ChartDataPoint } from "../types";
+
 
 interface LeafAnalysisResult {
   score: number;
@@ -1280,6 +1286,106 @@ export default function Dashboard({
   const [editingProfile, setEditingProfile] = useState(userProfile);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Notification state
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
+    const saved = localStorage.getItem('agriNotifications');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      {
+        id: '1',
+        type: 'danger',
+        category: 'moisture',
+        title: 'Low Soil Moisture Alert',
+        message: 'Field 1 soil moisture has dropped below 35%. Automated irrigation recommended.',
+        timestamp: '10 mins ago',
+        read: false
+      },
+      {
+        id: '2',
+        type: 'warning',
+        category: 'pest',
+        title: 'Microclimate Spore Warning',
+        message: 'High humidity detected (62%). Fungal spore germination risk is MODERATE.',
+        timestamp: '45 mins ago',
+        read: false
+      },
+      {
+        id: '3',
+        type: 'info',
+        category: 'market',
+        title: 'Mandi Price Update',
+        message: 'Arecanut (Supari) price in Mangalore market increased to ₹48,500/quintal.',
+        timestamp: '2 hours ago',
+        read: true
+      },
+      {
+        id: '4',
+        type: 'success',
+        category: 'system',
+        title: 'Telemetry Node Synced',
+        message: 'All 8 field sensor nodes are online and operating at 99.8% signal clarity.',
+        timestamp: '5 hours ago',
+        read: true
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('agriNotifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  // Dynamically evaluate telemetry data to issue live smart agricultural notifications
+  useEffect(() => {
+    if (!data) return;
+    setNotifications(prev => {
+      let updated = [...prev];
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      // Soil Moisture check
+      if (data.soilMoisture < 35 && !updated.some(n => n.category === 'moisture' && !n.read)) {
+        updated.unshift({
+          id: `moisture-${Date.now()}`,
+          type: 'danger',
+          category: 'moisture',
+          title: t.soilMoistureAlert || 'Low Soil Moisture Warning',
+          message: `${(data.soilMoisture).toFixed(1)}% - ${t.soilMoistureDesc || 'Moisture level dropped to critical threshold. Immediate irrigation recommended.'}`,
+          timestamp: timeStr,
+          read: false
+        });
+      }
+
+      // NPK Nitrogen check
+      if (data.npk.nitrogen < 40 && !updated.some(n => n.category === 'npk' && !n.read)) {
+        updated.unshift({
+          id: `npk-${Date.now()}`,
+          type: 'warning',
+          category: 'npk',
+          title: t.npkAlert || 'Nitrogen Deficiency',
+          message: `Nitrogen at ${Math.round(data.npk.nitrogen)} PPM - ${t.npkDesc || 'Nitrogen level is low. Consider adding organic compost or urea.'}`,
+          timestamp: timeStr,
+          read: false
+        });
+      }
+
+      return updated.slice(0, 15); // keep max 15 recent notifications
+    });
+  }, [data?.soilMoisture, data?.npk.nitrogen]);
+
+  const markAllNotificationsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const markSingleNotificationRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
   const renderSidebarContent = (isMobile = false) => {
     return (
       <>
@@ -1536,15 +1642,136 @@ export default function Dashboard({
               </AnimatePresence>
             </div>
 
-            <div className="hidden sm:flex items-center gap-4">
-              <button onClick={fetchData} className="p-3.5 text-text-dim hover:text-primary hover:bg-primary/10 rounded-2xl transition-all active:scale-95 border border-border-subtle shadow-sm">
-                <RefreshCcw className="w-6 h-6" />
+            <div className="flex items-center gap-3 sm:gap-4">
+              <button onClick={fetchData} title={t.refresh} className="p-2.5 lg:p-3.5 text-text-dim hover:text-primary hover:bg-primary/10 rounded-2xl transition-all active:scale-95 border border-border-subtle shadow-sm">
+                <RefreshCcw className="w-5 h-5 lg:w-6 lg:h-6" />
               </button>
+              
               <div className="relative">
-                <button className="p-3.5 text-text-dim hover:text-primary hover:bg-primary/10 rounded-2xl transition-all active:scale-95 border border-border-subtle shadow-sm">
-                  <Bell className="w-6 h-6" />
+                <button
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                  title={t.notifications || "Agricultural Alerts"}
+                  aria-label="Toggle notifications"
+                  className={`p-2.5 lg:p-3.5 rounded-2xl transition-all active:scale-95 border border-border-subtle shadow-sm relative ${isNotificationsOpen ? 'bg-primary/20 text-primary border-primary/50' : 'text-text-dim hover:text-primary hover:bg-primary/10'}`}
+                >
+                  <Bell className="w-5 h-5 lg:w-6 lg:h-6" />
+                  {notifications.some(n => !n.read) && (
+                    <span className="absolute top-2 right-2 flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-accent border-2 border-surface"></span>
+                    </span>
+                  )}
                 </button>
-                <span className="absolute top-3 right-3 w-3 h-3 bg-accent rounded-full border-2 border-surface" />
+
+                {/* Notifications Popover Dropdown */}
+                <AnimatePresence>
+                  {isNotificationsOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                      className="absolute right-0 mt-4 w-80 sm:w-96 bg-surface dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-border-subtle overflow-hidden z-50 p-4"
+                    >
+                      <div className="flex items-center justify-between pb-3 mb-3 border-b border-border-subtle px-2">
+                        <div className="flex items-center gap-2">
+                          <BellRing className="w-5 h-5 text-primary" />
+                          <h3 className="font-black text-sm text-text-main uppercase tracking-wider">
+                            {t.notifications || "Agricultural Alerts"}
+                          </h3>
+                          {notifications.filter(n => !n.read).length > 0 && (
+                            <span className="px-2 py-0.5 bg-accent/20 text-accent text-[10px] font-black rounded-full">
+                              {notifications.filter(n => !n.read).length} NEW
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {notifications.length > 0 && (
+                            <>
+                              <button
+                                onClick={markAllNotificationsRead}
+                                title={t.markAllRead || "Mark all read"}
+                                className="p-1.5 text-text-dim hover:text-primary hover:bg-primary/10 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={clearAllNotifications}
+                                title={t.clearAll || "Clear all"}
+                                className="p-1.5 text-text-dim hover:text-red-500 hover:bg-red-500/10 rounded-lg text-xs font-bold transition-all"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={() => setIsNotificationsOpen(false)}
+                            className="p-1.5 text-text-dim hover:text-text-main rounded-lg transition-all"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="max-h-[380px] overflow-y-auto space-y-2.5 pr-1 scrollbar-none">
+                        {notifications.length === 0 ? (
+                          <div className="py-10 text-center flex flex-col items-center justify-center">
+                            <Sparkles className="w-10 h-10 text-text-dim/40 mb-3" />
+                            <p className="text-xs font-bold text-text-dim">
+                              {t.noNotifications || "No active agricultural alerts"}
+                            </p>
+                          </div>
+                        ) : (
+                          notifications.map((notif) => (
+                            <motion.div
+                              key={notif.id}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              onClick={() => markSingleNotificationRead(notif.id)}
+                              className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative ${
+                                notif.read
+                                  ? 'bg-surface-hover/50 border-border-subtle opacity-75'
+                                  : 'bg-surface-hover border-primary/30 shadow-md'
+                              }`}
+                            >
+                              <div className="flex gap-3">
+                                <div className={`p-2.5 rounded-xl shrink-0 h-fit ${
+                                  notif.type === 'danger' ? 'bg-red-500/10 text-red-500' :
+                                  notif.type === 'warning' ? 'bg-amber-500/10 text-amber-500' :
+                                  notif.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
+                                  'bg-blue-500/10 text-blue-500'
+                                }`}>
+                                  {notif.category === 'moisture' ? <Droplet className="w-4 h-4" /> :
+                                   notif.category === 'pest' ? <AlertTriangle className="w-4 h-4" /> :
+                                   notif.category === 'market' ? <TrendingUp className="w-4 h-4" /> :
+                                   notif.category === 'npk' ? <Sprout className="w-4 h-4" /> :
+                                   <Info className="w-4 h-4" />}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-2 mb-1">
+                                    <h4 className={`text-xs font-black truncate ${notif.read ? 'text-text-dim' : 'text-text-main'}`}>
+                                      {notif.title}
+                                    </h4>
+                                    <span className="text-[9px] font-bold text-text-dim shrink-0">
+                                      {notif.timestamp}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] font-medium text-text-dim leading-snug">
+                                    {notif.message}
+                                  </p>
+                                </div>
+                              </div>
+                              {!notif.read && (
+                                <span className="absolute top-3 right-3 w-2 h-2 bg-primary rounded-full" />
+                              )}
+                            </motion.div>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 

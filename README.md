@@ -37,10 +37,6 @@ Make sure your machine has **Node.js** (LTS version recommended) installed.
 2. **Configure Your Environment Variables:**
 Create a dedicated .env file in the root project folder and add your verified API credentials:
 
-# API Keys Configuration Matrix
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
-VITE_GOI_DATA_API_KEY=your_data_gov_in_api_key_here
-VITE_OPENWEATHER_API_KEY=your_openweather_api_key_here
 Boot Up the Local Development Server:
 
 Bash

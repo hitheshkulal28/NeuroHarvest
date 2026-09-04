@@ -17,3 +17,14 @@ export interface ChartDataPoint {
   moisture: number;
   temp: number;
 }
+
+export interface NotificationItem {
+  id: string;
+  type: 'danger' | 'warning' | 'info' | 'success';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  category: 'moisture' | 'weather' | 'pest' | 'market' | 'npk' | 'system';
+}
+
