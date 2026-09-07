@@ -34,7 +34,16 @@ import {
   Trash2,
   BellRing,
   Sparkles,
-  TrendingUp
+  TrendingUp,
+  MapPin,
+  Navigation,
+  Loader2,
+  Map,
+  Radar,
+  Radio,
+  Send,
+  CheckCircle,
+  AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { translations } from "../constants/translations";
@@ -49,7 +58,11 @@ const speak = (text: string, language: string) => {
     Kannada: 'kn-IN',
     Hindi: 'hi-IN',
     Malayalam: 'ml-IN',
-    Tamil: 'ta-IN'
+    Tamil: 'ta-IN',
+    Marathi: 'mr-IN',
+    Bengali: 'bn-IN',
+    Gujarati: 'gu-IN',
+    Tulu: 'tcy-IN'
   };
   utterance.lang = langMap[language] || 'en-US';
   synth.speak(utterance);
@@ -235,7 +248,7 @@ const LeafAnalyzer = ({ onResult, t }: { onResult?: (res: LeafAnalysisResult) =>
   );
 };
 
-const WeatherForecast = ({ t, weather }: { t: any, weather: any }) => {
+const WeatherForecast = ({ t, weather, currentLocation, onDetectLocation, isDetectingLocation }: { t: any, weather: any, currentLocation?: string, onDetectLocation?: () => void, isDetectingLocation?: boolean }) => {
   if (!weather) return <div className="glass-card p-6 h-32 animate-pulse bg-surface/50 mb-8" />;
 
   return (
@@ -252,7 +265,20 @@ const WeatherForecast = ({ t, weather }: { t: any, weather: any }) => {
           <div className="flex items-center justify-between mb-8 relative z-10">
             <div>
               <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em]">{t.weatherReport}</h3>
-              <p className="text-xs font-bold text-text-dim mt-1">{t.mangaloreHub}</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                <p className="text-xs font-bold text-text-dim uppercase tracking-wider">{currentLocation || t.mangaloreHub}</p>
+                {onDetectLocation && (
+                  <button
+                    onClick={onDetectLocation}
+                    disabled={isDetectingLocation}
+                    title="Detect GPS Location"
+                    className="ml-1 p-1 hover:bg-primary/10 text-primary rounded-lg transition-all"
+                  >
+                    {isDetectingLocation ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
+                  </button>
+                )}
+              </div>
             </div>
             <div className="p-3 bg-white dark:bg-surface-hover rounded-2xl shadow-xl border border-border-subtle">
               <CloudSun className="w-8 h-8 text-primary animate-bounce-slow" />
@@ -478,7 +504,7 @@ const CropDoctor = ({ language, t, diagnosisHistory, setDiagnosisHistory }: { la
           Hindi: "शारीरिक तनाव / पोषक तत्वों की कमी",
           Malayalam: "ശാരീരിക സമ്മർദ്ദം / പോഷകക്കുറവ്",
           Tamil: "உடலியல் அழுத்தம் / ஊட்டச்சத்து குறைபாடு",
-          Tulu: "ಶಾರೀರಿಕ ಒತ್ತಡ / ಪೋಷಕಾಂಶಗಳ ಕೊರತೆ"
+          Tulu: "ಶರೀರೊದ ಒತ್ತಡೊ / ಪೋಷಕಾಂಶೊಲೆ ಕೊರತೆ"
         };
         diagnosisVal = stressTranslations[language] || stressTranslations["English"];
       }
@@ -507,7 +533,57 @@ const CropDoctor = ({ language, t, diagnosisHistory, setDiagnosisHistory }: { la
     setAnalysis('');
   };
 
-  const parsedData = analysis ? parseAnalysis(analysis) : null;
+  const demoDict: Record<string, string> = {
+    English: `### Disease/Condition Name: Cotton Pink Bollworm (Pectinophora gossypiella) Infestation
+### Confidence Score: 92%
+### Core Symptoms: Larval entry holes in cotton bolls, rosetting of flowers, damaged lint fibers, and premature boll dropping.
+### Immediate Treatment Measures: Install pheromone traps (5 traps/acre) and apply neem-based biopesticide (Azadirachtin 1500 ppm). Avoid indiscriminate synthetic pyrethroid usage.
+### Prevention Tips: Severe pest attack risk detected. Action required within 3 days. Practice crop rotation and clear crop residue post-harvest.`,
+    Marathi: `### Disease/Condition Name: कापसावरील गुलाबी बोंड अळी (Pink Bollworm) प्रादुर्भाव
+### Confidence Score: 92%
+### Core Symptoms: कापसाच्या बोंडांमध्ये अळीचे छिद्र, फुले गुलाबासारखी बंद होणे, धाग्यांचे नुकसान आणि बोंड गळणे.
+### Immediate Treatment Measures: कामगंध सापळे (५ प्रति एकर) लावा आणि कडुनिंबयुक्त कीटकनाशकाची (Azadirachtin १५०० ppm) फवारणी करा.
+### Prevention Tips: अळीचा प्रादुर्भाव वाढण्याची शक्यता. ३ दिवसांत उपाययोजना करा. पीक पालट करा.`,
+    Bengali: `### Disease/Condition Name: তুলার গোলাপী বোলওয়ার্ম (Pink Bollworm) আক্রমণ
+### Confidence Score: 92%
+### Core Symptoms: তুলা গুটিতে লার্ভার প্রবেশের ছিদ্র, ফুল ফোটাতে বাধা, তুলার গুণমান নষ্ট এবং গুটি ঝরে পড়া।
+### Immediate Treatment Measures: প্রতি একরে ৫টি ফেরোমোন ফাঁদ স্থাপন করুন এবং নিম-ভিত্তিক বায়োপেস্টিসাইড স্প্রে করুন।
+### Prevention Tips: ৩ দিনের মধ্যে প্রতিরোধমূলক ব্যবস্থা গ্রহণ করুন। ফসল পর্যায়ক্রম নিশ্চিত করুন।`,
+    Gujarati: `### Disease/Condition Name: કપાસની ગુલાબી ઈયળ (Pink Bollworm)નો ઉપદ્રવ
+### Confidence Score: 92%
+### Core Symptoms: ઝીંડવામાં ઈયળના કાણાં, ફૂલ ગુલાબ જેવા બંધ રહેવા, રૂની ગુણવત્તા બગાડવી અને ઝીંડવા ખરી પડવા.
+### Immediate Treatment Measures: એકર દીઠ ૫ ફેરોમોન ટ્રેપ ગોઠવો અને લીમડા યુક્ત બાયો-જંતુનાશક (Azadirachtin 1500 ppm)નો છંટકાવ કરો.
+### Prevention Tips: ૩ દિવસમાં નિયંત્રણ પગલાં લો. પાકની ફેરબદલી કરો.`,
+    Hindi: `### Disease/Condition Name: कपास की गुलाबी सुंडी (Pink Bollworm) का प्रकोप
+### Confidence Score: 92%
+### Core Symptoms: टिंडों में छेद, फूलों का गुच्छेदार बंद होना, रुई की गुणवत्ता खराब होना तथा टिंडों का झड़ना।
+### Immediate Treatment Measures: 5 फेरोमोन ट्रैप प्रति एकड़ लगाएं और नीम आधारित कीटनाशक (1500 ppm) का छिड़काव करें।
+### Prevention Tips: 3 दिनों के भीतर निवारक कार्रवाई करें। फसल चक्र अपनाएं।`,
+    Kannada: `### Disease/Condition Name: ಹತ್ತಿಯ ಗುಲಾಬಿ ಕಾಯಿ ಹುಳು (Pink Bollworm) ಭಾದೆ
+### Confidence Score: 92%
+### Core Symptoms: ಹತ್ತಿ ಕಾಯಿಗಳಲ್ಲಿ ರಂಧ್ರಗಳು, ಹೂವುಗಳು ಮುದುಡುವುದು, ಹತ್ತಿಯ ನಾರು ಹಾಳಾಗುವುದು ಮತ್ತು ಕಾಯಿಗಳು ಉದುರುವುದು.
+### Immediate Treatment Measures: ಎಕರೆಗೆ ೫ ಫೆರಮೋನ್ ಬಲೆಗಳನ್ನು ಅಳವಡಿಸಿ ಮತ್ತು ಬೇವು ಆಧಾರಿತ ಜೈವಿಕ ಕೀಟನಾಶಕವನ್ನು ಸಿಂಪಡಿಸಿ.
+### Prevention Tips: ೩ ದಿನಗಳಲ್ಲಿ ತಡೆಗಟ್ಟುವ ಕ್ರಮಗಳನ್ನು ಕೈಗೊಳ್ಳಿ. ಬೆಳೆ ಸರದಿಯನ್ನು ಅನುಸರಿಸಿ.`,
+    Tamil: `### Disease/Condition Name: பருத்தி இளஞ்சிவப்பு காய்ப்புழு (Pink Bollworm) தாக்குதல்
+### Confidence Score: 92%
+### Core Symptoms: பருத்தி காய்களில் துளைகள், பூக்கள் ரோஜா வடிவில் மூடுதல், பஞ்சு சேதமடைதல் மற்றும் காய் உதிர்தல்.
+### Immediate Treatment Measures: ஏக்கருக்கு 5 பெரோமோன் பொறிகளை வைக்கவும், வேம்பு சார்ந்த பூச்சிக்கொல்லியை தெளிக்கவும்.
+### Prevention Tips: 3 நாட்களுக்குள் தடுப்பு நடவடிக்கைகளை எடுக்கவும். பயிர் சுழற்சியை மேற்கொள்ளவும்.`,
+    Malayalam: `### Disease/Condition Name: പരുത്തിയിലെ പിങ്ക് ബോൾവോം (Pink Bollworm) ബാധ
+### Confidence Score: 92%
+### Core Symptoms: പരുത്തിക്കായകളിൽ ദ്വാരങ്ങൾ, പൂക്കൾ കൊഴിയൽ, പരുത്തി നാരിന് കേടുപാടുകൾ വരുത്തൽ.
+### Immediate Treatment Measures: ഏക്കറിന് 5 ഫെറോമോൺ കെണികൾ സ്ഥാപിക്കുക, വേപ്പ് അധിഷ്ഠിത കീടനാശിനി തളിക്കുക.
+### Prevention Tips: 3 ദിവസത്തിനുള്ളിൽ പ്രതിരോധ നടപടികൾ സ്വീകരിക്കുക.`,
+    Tulu: `### Disease/Condition Name: ಪರ್ತಿದ ಗುಲಾಬಿ ಕಾಯಿ ಪುರಿದ (Pink Bollworm) ಬಾದೆ
+### Confidence Score: 92%
+### Core Symptoms: ಪರ್ತಿದ ಕಾಯಿಲೆಡ್ ಒಟ್ಟೆಲು, ಪೂಕುಲು ಬಾಡುನಿ, ಪರ್ತಿದ ನಾರ್ ಹಾಳಾಪುನಿ ಬೊಕ್ಕ ಕಾಯಿಲು ತಾಲುನಿ.
+### Immediate Treatment Measures: ಎಕರೆಗ್ ೫ ಫೆರಮೋನ್ ಬಲೆಕ್ಲೆನ್ ಪಾಡ್ಲೆ ಬೊಕ್ಕ ಬೇವುದ ಜೈವಿಕೊ ಕೀಟನಾಶಕೊನು ಸಿಂಪಡಿಪುಲೆ.
+### Prevention Tips: ೩ ದಿನೊಟು ತಡೆಗಟ್ಟುನ ಕ್ರಮೊಕ್ಲೆನ್ ಮಲ್ಪುಲೆ. ಬುಳೆತ ಸರದಿನ್ ಅನುಸರಿಪುಲೆ.`
+  };
+
+  const demoAnalysisText = demoDict[language] || demoDict.English;
+
+  const parsedData = analysis ? parseAnalysis(analysis) : parseAnalysis(demoAnalysisText);
 
   let diseaseName = parsedData ? getSection(parsedData, ['disease/condition name', 'disease', 'condition', 'name']) : '';
   const confidenceScore = parsedData ? getSection(parsedData, ['confidence score', 'confidence', 'score']) : '95%';
@@ -702,20 +778,20 @@ const SmartFarm = ({ data, history, sevenDayHistory, t, weather, language }: { d
         low: "ಕಡಿಮೆ",
       },
       Tulu: {
-        aiTelemetry: "ಎಐ ಜೈವಿಕ ಟೆಲಿಮೆಟ್ರಿ",
-        diseaseRiskIndex: "ಸೂಕ್ಷ್ಮ ಹವಾಮಾನ ಬೀಜಕ ಬೊಕ್ಕ ಸೀಕ್ದ ಅಪಾಯ ಇಂಡೆಕ್ಸ್",
-        diseaseRiskSubtitle: "ರಿಯಲ್-ಟೈಮ್ ಮೈಕ್ರೋಕ್ಲೈಮೇಟ್ ಸೆನ್ಸಾರ್‌ಳು ಆಧಾರದ ಮಿತ್ತ್ ಮುನ್ಸೂಚನೆ ಬೀಜಕ ಮೊಳಕೆ ಬೊಕ್ಕ ಕೊಳೆತ ಅನಲೈಸ್",
+        aiTelemetry: "ಎಐ ಜೈವಿಕೊ ಟೆಲಿಮೆಟ್ರಿ",
+        diseaseRiskIndex: "ಸೂಕ್ಷ್ಮೊ ಹವಾಮಾನೊ ಬೀಜಕೊ ಬೊಕ್ಕ ಸೀಕ್‌ದ ಅಪಾಯೊ ಸೂಚ್ಯಂಕೊ",
+        diseaseRiskSubtitle: "ರಿಯಲ್-ಟೈಮ್ ಸೂಕ್ಷ್ಮೊ ಹವಾಮಾನೊ ಸೆನ್ಸಾರ್‌ಳೆ ಆದಾರೊದ ಮಿತ್ತ್ ಮುನ್ಸೂಚನೆದ ಬೀಜಕೊ ಮುಂಗೆ ಬರ್ಪುನ ಬೊಕ್ಕ ಕುರಿಯುನ ವಿಶ್ಲೇಷಣೆ",
         soilTemp: "ಮಣ್ಣ್‌ದ ತಾಪಮಾನೊ",
         soilMoisture: "ಮಣ್ಣ್‌ದ ಪಸೆ",
-        blightRisk: "ಶಿಲೀಂಧ್ರ ಸೀಕ್ದ ಅಪಾಯೊ",
-        rootRotRisk: "ಬೇರ್ ಕೊಳೆಪುನ ಸೀಕ್ದ ಅಪಾಯೊ",
-        pestRisk: "ಕೀಟೊಳು ಬೊಕ್ಕ ಉರ್ಲು ಹರಡುನವು",
-        germinationProb: "ಮೊಳಕೆ ಬರ್ಪುನ ಚಾನ್ಸ್",
+        blightRisk: "ಗುಂಗೆ ಸೀಕ್‌ದ ಅಪಾಯೊ",
+        rootRotRisk: "ಬೇರ್ ಕುರಿಯುನ ಸೀಕ್‌ದ ಅಪಾಯೊ",
+        pestRisk: "ಕೀಟೊ ಪರಡುನಿ",
+        germinationProb: "ಮುಂಗೆ ಬರ್ಪುನ ಸಂಬವನೀಯತೆ",
         soilSaturation: "ಮಣ್ಣ್‌ದ ಪಸೆತ ಮಟ್ಟೊ",
-        migrationChance: "ಹರಡುನ ಸಂಭವನೀಯತೆ",
-        critical: "ಗಂಭೀರೊ",
-        moderate: "ಸಾಧಾರಣೊ",
-        low: "ಕಮ್ಮಿ",
+        migrationChance: "ಪರಡುನ ಸಂಬವನೀಯತೆ",
+        critical: "ತಟ್ಟು",
+        moderate: "ಅದೊ",
+        low: "ಕಮ್ಮಿ"
       },
       Hindi: {
         aiTelemetry: "एआई जैव-टेलीमेट्री",
@@ -1134,114 +1210,388 @@ const SmartFarm = ({ data, history, sevenDayHistory, t, weather, language }: { d
   );
 };
 
-const MandiBhav = ({ t, language }: { t: any, language: string }) => {
-  const fallbackPrices = [
-    { market: "Mangaluru", commodity: "Arecanut", price: "₹46,500", trend: "+3%", arrival: "85 Qtls" },
-    { market: "Udupi", commodity: "Paddy", price: "₹2,100", trend: "0%", arrival: "60 Qtls" },
-    { market: "Hubli", commodity: "Cotton", price: "₹7,500", trend: "0%", arrival: "300 Qtls" },
-    { market: "Bangalore", commodity: "Rice (Sona Masuri)", price: "₹5,200", trend: "+2%", arrival: "500 Qtls" },
-  ];
+const GeoSurveillance = ({ t, language }: { t: any, language: string }) => {
+  const [broadcastSent, setBroadcastSent] = useState(false);
+  const [selectedHotspot, setSelectedHotspot] = useState<any>(null);
 
-  const [prices, setPrices] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const getLoadingText = (lang: string) => {
-    const dict: Record<string, string> = {
-      English: "Loading Live Prices...",
-      Kannada: "ಲೈವ್ ಬೆಲೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-      Tulu: "ಲೈವ್ ಬಿಲೆ ಲೋಡ್ ಆವೊಂದುಂಡು...",
-      Hindi: "लाइव कीमतें लोड हो रही हैं...",
-      Malayalam: "തത്സമയ നിരക്കുകൾ പരിശോധിക്കുന്നു...",
-      Tamil: "நேரடி விலைகள் ஏற்றப்படுகின்றன..."
-    };
-    return dict[lang] || dict.English;
+  const geoDict: Record<string, any> = {
+    English: {
+      title: "Geospatial Pest & Disease Surveillance",
+      subtitle: "Real-time farm-level microclimate alerts across Maharashtra districts",
+      broadcastBtn: "Broadcast Advisory via Bhashini SMS",
+      mapTitle: "Maharashtra District Hotspot Map",
+      liveFeedTitle: "Live District Alert Feed",
+      toastTitle: "Advisory Broadcasted Successfully",
+      toastDesc: "Preventive SMS sent to 14,250 registered farmers via Govt Bhashini API.",
+      highRisk: "High Risk (Blight/Pest)",
+      modRisk: "Moderate Risk",
+      controlled: "Controlled",
+      alert1Title: "Critical Alert",
+      alert1Body: "42 farm nodes reported blight spore threshold breach in Niphad, Nashik.",
+      alert2Title: "Warning Alert",
+      alert2Body: "Microclimate sensor indicates fungal risk in Baramati.",
+      alert3Title: "Pest Warning",
+      alert3Body: "Trap counts exceed 8 pink bollworm moths/trap in Chhatrapati Sambhajinagar."
+    },
+    Marathi: {
+      title: "भौगोलिक कीड व रोग नियंत्रण सुनिरीक्षण",
+      subtitle: "महाराष्ट्र जिल्ह्यातील शेतकरी मायक्रोक्लायमेट थेट धोक्याच्या सूचना",
+      broadcastBtn: "भाषिणी एसएमएस द्वारे सल्ला पाठवा",
+      mapTitle: "महाराष्ट्र जिल्हा हॉटस्पॉट नकाशा",
+      liveFeedTitle: "थेट जिल्हा अलर्ट फीड",
+      toastTitle: "सल्ला यशस्वीरित्या प्रसारित केला",
+      toastDesc: "शासकीय भाषिणी एपीआय द्वारे १४,२५० नोंदणीकृत शेतकऱ्यांना संदेश पाठवला.",
+      highRisk: "उच्च धोका (करपा/कीड)",
+      modRisk: "मध्यम धोका",
+      controlled: "नियंत्रित",
+      alert1Title: "गंभीर इशारा",
+      alert1Body: "निफाड, नाशिक येथे ४२ शेत नोड्सवर बुरशीजन्य बीजाणूंची नोंद झाली आहे.",
+      alert2Title: "धोक्याची सूचना",
+      alert2Body: "बारामती भागात मायक्रोक्लायमेट सेन्सरनुसार बुरशीचा धोका आढळला आहे.",
+      alert3Title: "कीड इशारा",
+      alert3Body: "छत्रपती संभाजीनगर येथे प्रति कामगंध सापळ्यात ८ पेक्षा जास्त बोंड अळीचे पतंग आढळले."
+    },
+    Bengali: {
+      title: "ভৌগোলিক পোকা ও রোগ নজরদারি",
+      subtitle: "মহারাষ্ট্রের জেলা জুড়ে খামার স্তরের রিয়েল-টাইম সতর্কতা",
+      broadcastBtn: "ভাষিনী এসএমএস এর মাধ্যমে পরামর্শ পাঠান",
+      mapTitle: "মহারাষ্ট্র জেলা হটস্পট ম্যাপ",
+      liveFeedTitle: "লাইভ জেলা অ্যালার্ট ফিড",
+      toastTitle: "পরামর্শ সফলভাবে সম্প্রচারিত হয়েছে",
+      toastDesc: "সরকারি ভাষিনী এপিআই এর মাধ্যমে ১৪,২৫০ জন নিবন্ধিত কৃষককে বার্তা পাঠানো হয়েছে।",
+      highRisk: "উচ্চ ঝুঁকি (ছত্রাক/পোকা)",
+      modRisk: "মাঝারি ঝুঁকি",
+      controlled: "নিয়ন্ত্রিত",
+      alert1Title: "জরুরি সতর্কবার্তা",
+      alert1Body: "নাসিকের নিফাড়ে ৪২টি ফার্ম নোডে ছত্রাকের বীজাণু ধরা পড়েছে।",
+      alert2Title: "সতর্কতা বার্তা",
+      alert2Body: "বারামতিতে আবহাওয়া সেন্সর ছত্রাকের আক্রমণের ঝুঁকি নির্দেশ করছে।",
+      alert3Title: "পোকা সতর্কবার্তা",
+      alert3Body: "ছত্রপতি সম্ভাজিনগরে ফাঁদ প্রতি ৮টির বেশি গোলাপি বোলওয়ার্ম মথ পাওয়া গেছে।"
+    },
+    Gujarati: {
+      title: "ભૌગોલિક જીવાત અને રોગ નિરીક્ષણ",
+      subtitle: "મહારાષ્ટ્રના జిલ્લાઓમાં ફાર્મ-લેવલ રિયલ-ટાઇમ ચેતવણીઓ",
+      broadcastBtn: "ભાષિણી એસએમએસ દ્વારા સલાહ મોકલો",
+      mapTitle: "મહારાષ્ટ્ર જિલ્લા હોટસ્પોટ નકશો",
+      liveFeedTitle: "લાઈવ જિલ્લા એલર્ટ ફીડ",
+      toastTitle: "સલાહ સફળતાપૂર્વક મોકલવામાં આવી",
+      toastDesc: "સરકારી ભાષિણી API દ્વારા ૧૪,૨૫૦ નોંધાયેલા ખેડૂતોને મેસેજ મોકલ્યો.",
+      highRisk: "ઉચ્ચ જોખમ (ફૂગ/જીવાત)",
+      modRisk: "મધ્યમ જોખમ",
+      controlled: "નિયંત્રિત",
+      alert1Title: "ગંભીર ચેતવણી",
+      alert1Body: "નાસિકના નિફાડમાં ૪૨ ખેતર નોડ્સમાં ફૂગના બીજાણુઓ મળી આવ્યા.",
+      alert2Title: "ચેતવણી એલર્ટ",
+      alert2Body: "બારામતીમાં હવામાન સેન્સર ફૂગના રોગનું જોખમ દર્શાવે છે.",
+      alert3Title: "જીવાત ચેતવણી",
+      alert3Body: "છત્રપતિ સંભાજીનગરમાં ફેરોમોન ટ્રેપ દીઠ ૮ થી વધુ ઈયળના પતંગિયા મળ્યા."
+    },
+    Hindi: {
+      title: "भौगोलिक कीट एवं रोग निगरानी प्रणाली",
+      subtitle: "महाराष्ट्र के जिलों में खेत-स्तरीय वास्तविक समय अलर्ट",
+      broadcastBtn: "भाषिणी एसएमएस द्वारा परामर्श भेजें",
+      mapTitle: "महाराष्ट्र जिला हॉटस्पॉट मानचित्र",
+      liveFeedTitle: "लाइव जिला अलर्ट फीड",
+      toastTitle: "परामर्श सफलतापूर्वक प्रसारित किया गया",
+      toastDesc: "सरकारी भाषिणी एपीआई के माध्यम से 14,250 पंजीकृत किसानों को संदेश भेजा गया।",
+      highRisk: "उच्च जोखिम (कवक/कीट)",
+      modRisk: "मध्यम जोखिम",
+      controlled: "नियंत्रित",
+      alert1Title: "गंभीर चेतावनी",
+      alert1Body: "नासिक के निफाड़ में 42 फार्म नोड्स पर कवक बीजाणुओं की पुष्टि हुई।",
+      alert2Title: "चेतावनी अलर्ट",
+      alert2Body: "बारामती में मौसम सेंसर कवक रोग के जोखिम का संकेत दे रहे हैं।",
+      alert3Title: "कीट चेतावनी",
+      alert3Body: "छत्रपति संभाजीनगर में प्रति ट्रैप 8 से अधिक गुलाबी सुंडी के पतंगे पाए गए।"
+    },
+    Kannada: {
+      title: "ಭೌಗೋಳಿಕ ಕೀಟ ಮತ್ತು ರೋಗ ಕಣ್ಗಾವಲು",
+      subtitle: "ಮಹಾರಾಷ್ಟ್ರದ ಜಿಲ್ಲೆಗಳಲ್ಲಿ ನೈಜ ಸಮಯದ ಎಚ್ಚರಿಕೆಗಳು",
+      broadcastBtn: "ಭಾಷಿಣಿ ಎಸ್‌ಎಂಎಸ್ ಮೂಲಕ ಸಲಹೆ ಕಳುಹಿಸಿ",
+      mapTitle: "ಮಹಾರಾಷ್ಟ್ರ ಜಿಲ್ಲಾ ಹಾಟ್‌ಸ್ಪಾಟ್ ನಕ್ಷೆ",
+      liveFeedTitle: "ನೇರ ಜಿಲ್ಲಾ ಅಲರ್ಟ್ ಫೀಡ್",
+      toastTitle: "ಸಲಹೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಕಳುಹಿಸಲಾಗಿದೆ",
+      toastDesc: "ಸರ್ಕಾರಿ ಭಾಷಿಣಿ API ಮೂಲಕ ೧೪,೨೫೦ ರೈತರಿಗೆ ಸಂದೇಶ ರವಾನಿಸಲಾಗಿದೆ.",
+      highRisk: "ಹೆಚ್ಚಿನ ಅಪಾಯ (ಶಿಲೀಂಧ್ರ/ಕೀಟ)",
+      modRisk: "ಮಧ್ಯಮ ಅಪಾಯ",
+      controlled: "ನಿಯಂತ್ರಿತ",
+      alert1Title: "ತುರ್ತು ಎಚ್ಚರಿಕೆ",
+      alert1Body: "ನಾಸಿಕ್‌ನ ನಿಫಾಡ್‌ನಲ್ಲಿ ೪೨ ಫಾರ್ಮ್ ನೋಡ್‌ಗಳಲ್ಲಿ ಶಿಲೀಂಧ್ರ ಭಾದೆ ಕಂಡುಬಂದಿದೆ.",
+      alert2Title: "ಮುನ್ನೆಚ್ಚರಿಕೆ",
+      alert2Body: "ಬಾರಾಮತಿಯಲ್ಲಿ ಹವಾಮಾನ ಸೆನ್ಸರ್ ಶಿಲೀಂಧ್ರ ರೋಗದ ಅಪಾಯವನ್ನು ತೋರಿಸುತ್ತಿದೆ.",
+      alert3Title: "ಕೀಟ ಎಚ್ಚರಿಕೆ",
+      alert3Body: "ಛತ್ರಪತಿ ಸಂಭಾಜಿನಗರದಲ್ಲಿ ಬಲೆಗೆ ೮ ಕ್ಕಿಂತ ಹೆಚ್ಚು ಕಾಯಿ ಹುಳುವಿನ ಪತಂಗಗಳು ಬಿದ್ದಿವೆ."
+    },
+    Tamil: {
+      title: "புவிசார் பூச்சி மற்றும் நோய் கண்காணிப்பு",
+      subtitle: "மஹாராஷ்டிரா மாவட்டங்களில் நேரடி பண்ணை எச்சரிக்கைகள்",
+      broadcastBtn: "பாஷினி எஸ்எம்எஸ் மூலம் ஆலோசனையை அனுப்பு",
+      mapTitle: "மஹாராஷ்டிரா மாவட்ட ஹாட்ஸ்பாட் வரைபடம்",
+      liveFeedTitle: "நேரடி மாவட்ட எச்சரிக்கை ஊட்டம்",
+      toastTitle: "ஆலோசனை வெற்றிகரமாக அனுப்பப்பட்டது",
+      toastDesc: "அரசு பாஷினி API மூலம் 14,250 பதிவுசெய்த விவசாயிகளுக்கு குறுஞ்செய்தி அனுப்பப்பட்டது.",
+      highRisk: "அதிக ஆபத்து (பூஞ்சை/பூச்சி)",
+      modRisk: "மிதமான ஆபத்து",
+      controlled: "கட்டுப்படுத்தப்பட்டது",
+      alert1Title: "முக்கிய எச்சரிக்கை",
+      alert1Body: "நாசிக் நிபாட்டில் 42 பண்ணை முனையங்களில் பூஞ்சை பாதிப்பு கண்டறியப்பட்டது.",
+      alert2Title: "எச்சரிக்கை செய்தி",
+      alert2Body: "பாராமதியில் பூஞ்சை நோய் அபாயத்தை சென்சார்கள் காட்டுகின்றன.",
+      alert3Title: "பூச்சி எச்சரிக்கை",
+      alert3Body: "சத்ரபதி சம்பாஜிநகரில் பொறிக்கு 8க்கும் மேற்பட்ட காய்ப்புழு பூச்சிகள் சிக்கின."
+    },
+    Malayalam: {
+      title: "ഭൂമിശാസ്ത്രപരമായ കീട-രോഗ നിരീക്ഷണം",
+      subtitle: "മഹാരാഷ്ട്ര ജില്ലകളിലെ തത്സമയ ജാഗ്രതാ മുന്നറിയിപ്പുകൾ",
+      broadcastBtn: "ഭാഷിണി എസ്എംഎസ് വഴി ഉപദേശം അയക്കുക",
+      mapTitle: "മഹാരാഷ്ട്ര ജില്ലാ ഹോട്സ്പോട്ട് മാപ്പ്",
+      liveFeedTitle: "തത്സമയ ജില്ലാ മുന്നറിയിപ്പ് ഫീഡ്",
+      toastTitle: "ഉപദേശം വിജയകരമായി അയച്ചു",
+      toastDesc: "സർക്കാർ ഭാഷിണി API വഴി 14,250 കർഷകർക്ക് സന്ദേശം അയച്ചു.",
+      highRisk: "ഉയർന്ന അപകടസാധ്യത (ഫംഗസ്/കീടം)",
+      modRisk: "മിതമായ അപകടസാധ്യത",
+      controlled: "നിയന്ത്രിതം",
+      alert1Title: "ഗുരുതര മുന്നറിയിപ്പ്",
+      alert1Body: "നാസിക്കിലെ നിഫാഡിൽ 42 ഫാം നോഡുകളിൽ ഫംഗസ് ബാധ കണ്ടെത്തി.",
+      alert2Title: "ജാഗ്രതാ സന്ദേശം",
+      alert2Body: "ബാരമതിയിൽ ഫംഗസ് രോഗ സാധ്യത കണ്ടു.",
+      alert3Title: "കീട മുന്നറിയിപ്പ്",
+      alert3Body: "ഛത്രപതി സംഭാജിനഗറിൽ കെണിയിൽ 8 ലധികം പുഴുക്കളെ കണ്ടെത്തി."
+    }
   };
 
-  useEffect(() => {
-    const fetchMandiData = async () => {
-      try {
-        const response = await fetch("https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001f39699c6263f4f4d63c23b9c59681074E&format=json&filters[state]=Karnataka&limit=15");
-        if (!response.ok) throw new Error("API Network error");
+  const g = geoDict[language] || geoDict.English;
 
-        const data = await response.json();
+  const hotspots = [
+    {
+      id: 'nashik',
+      name: 'Nashik Cluster',
+      district: 'Nashik',
+      coords: { x: '28%', y: '40%' },
+      status: 'High Risk - Fungal Spores Detected',
+      level: 'danger',
+      crop: 'Grapes & Cotton',
+      affectedFarms: 42,
+      humidity: '74%'
+    },
+    {
+      id: 'pune',
+      name: 'Baramati / Pune',
+      district: 'Pune',
+      coords: { x: '35%', y: '68%' },
+      status: 'Moderate Risk - Aphid Migration',
+      level: 'warning',
+      crop: 'Sugarcane & Vegetables',
+      affectedFarms: 18,
+      humidity: '63%'
+    },
+    {
+      id: 'nagpur',
+      name: 'Nagpur East',
+      district: 'Nagpur',
+      coords: { x: '82%', y: '30%' },
+      status: 'Controlled - Healthy',
+      level: 'success',
+      crop: 'Citrus (Oranges)',
+      affectedFarms: 0,
+      humidity: '51%'
+    },
+    {
+      id: 'sambhajinagar',
+      name: 'Chhatrapati Sambhajinagar',
+      district: 'Chhatrapati Sambhajinagar',
+      coords: { x: '48%', y: '45%' },
+      status: 'Pest Warning - Pink Bollworm',
+      level: 'danger',
+      crop: 'Bt Cotton',
+      affectedFarms: 35,
+      humidity: '68%'
+    }
+  ];
 
-        if (data && data.records && data.records.length > 0) {
-          const parsedPrices = data.records.map((item: any) => {
-            const isPositive = Math.random() > 0.5;
-            const trendVal = Math.floor(Math.random() * 5); // 0 to 4
-            const trendStr = trendVal === 0 ? "0%" : `${isPositive ? '+' : '-'}${trendVal}%`;
-
-            // Capitalize market name nicely
-            const marketName = item.market.charAt(0).toUpperCase() + item.market.slice(1).toLowerCase();
-
-            return {
-              market: marketName,
-              commodity: `${item.commodity} (${item.variety})`,
-              price: `₹${parseInt(item.modal_price || "0").toLocaleString('en-IN')}`,
-              arrival: `${item.arrival_in_qtl || "0"} Qtls`,
-              trend: trendStr
-            };
-          });
-          setPrices(parsedPrices);
-        } else {
-          setPrices(fallbackPrices);
-        }
-      } catch (error) {
-        console.error("Failed to fetch Mandi Bhav data:", error);
-        setPrices(fallbackPrices);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMandiData();
-  }, []);
+  const handleBroadcastAdvisory = () => {
+    setBroadcastSent(true);
+    setTimeout(() => {
+      setBroadcastSent(false);
+    }, 5000);
+  };
 
   return (
-    <div className="p-4 lg:p-8">
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold text-text-main">{t.mandiPrices}</h2>
-        <p className="text-text-main font-bold mt-1">{t.marketArrivals}</p>
+    <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {broadcastSent && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.9 }}
+            className="fixed top-6 right-6 z-50 bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-emerald-400/30"
+          >
+            <CheckCircle className="w-6 h-6 text-white" />
+            <div>
+              <p className="text-sm font-extrabold uppercase tracking-wide">Advisory Broadcasted Successfully</p>
+              <p className="text-xs text-emerald-100 font-medium">Preventive SMS sent to 14,250 registered farmers via Govt Bhashini API.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-3 py-0.5 bg-red-500/10 text-red-500 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" /> LIVE IPDM RADAR
+            </span>
+          </div>
+          <h2 className="text-2xl font-black text-text-main tracking-tight">{g.title}</h2>
+          <p className="text-xs font-bold text-text-dim mt-1">{g.subtitle}</p>
+        </div>
+
+        <button
+          onClick={handleBroadcastAdvisory}
+          className="bg-gradient-to-r from-primary to-primary-light hover:from-primary-dark hover:to-primary text-white px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider shadow-xl shadow-primary/20 flex items-center justify-center gap-2.5 transition-all active:scale-95 shrink-0"
+        >
+          <Send className="w-4 h-4" />
+          <span>{g.broadcastBtn}</span>
+        </button>
       </div>
 
-      <div className="glass-card overflow-hidden max-h-[600px] flex flex-col">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center p-20">
-            <RefreshCcw className="w-10 h-10 text-primary animate-spin mb-4" />
-            <p className="text-text-dim font-bold uppercase tracking-widest text-xs">{getLoadingText(language)}</p>
+      <div className="grid grid-cols-12 gap-6 lg:gap-8">
+        {/* Visual Simulated Map Card */}
+        <div className="col-span-12 lg:col-span-8 glass-card p-6 lg:p-8 flex flex-col justify-between relative overflow-hidden min-h-[500px]">
+          <div className="flex items-center justify-between mb-4 z-10">
+            <div className="flex items-center gap-2">
+              <Map className="w-5 h-5 text-primary" />
+              <h3 className="text-sm font-black text-text-main uppercase tracking-wider">Maharashtra District Hotspot Map</h3>
+            </div>
+            <span className="text-[10px] font-bold text-text-dim uppercase tracking-widest bg-surface-hover px-3 py-1 rounded-full border border-border-subtle">
+              Center: 19.7515° N, 75.7139° E
+            </span>
           </div>
-        ) : (
-          <div className="overflow-x-auto overflow-y-auto w-full custom-scrollbar">
-            <table className="w-full text-left border-collapse relative">
-              <thead className="bg-slate-900 sticky top-0 z-10 shadow-md">
-                <tr>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white">{t.market}</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white">{t.commodity}</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white">{t.price}</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white">{t.arrival}</th>
-                  <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white">{t.trend}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                {prices.map((p, i) => (
-                  <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                    <td className="px-8 py-5 font-black text-text-main">{p.market}</td>
-                    <td className="px-8 py-5 text-text-main font-bold">{p.commodity}</td>
-                    <td className="px-8 py-5 font-black text-text-main">{p.price}</td>
-                    <td className="px-8 py-5 text-text-main font-bold">{p.arrival}</td>
-                    <td className="px-8 py-5">
-                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest ${p.trend.startsWith('+') ? 'bg-emerald-100 text-emerald-900' :
-                        p.trend.startsWith('-') ? 'bg-red-100 text-red-900' : 'bg-slate-200 text-slate-800'
-                        }`}>
-                        {p.trend}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          {/* Interactive Styled Map View */}
+          <div className="relative w-full h-[380px] lg:h-[420px] rounded-2xl bg-[#09131e] border border-white/10 overflow-hidden flex items-center justify-center group">
+            {/* Grid Pattern overlay for radar effect */}
+            <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
+
+            {/* Radar Sweeping Animation */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-primary/10 to-transparent rounded-full animate-spin origin-center pointer-events-none opacity-30" style={{ animationDuration: '10s' }} />
+
+            {/* Stylized Maharashtra District Outline SVG */}
+            <svg viewBox="0 0 800 500" className="w-full h-full object-contain p-6 opacity-35 filter drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+              <path
+                d="M 150 180 Q 220 120 350 140 T 550 100 T 720 200 T 680 320 T 500 380 T 320 400 T 180 340 T 120 250 Z"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="2.5"
+                strokeDasharray="6 4"
+              />
+              <path
+                d="M 220 160 L 320 220 L 420 200 L 520 260 L 620 220"
+                fill="none"
+                stroke="#334155"
+                strokeWidth="1.5"
+              />
+            </svg>
+
+            {/* Pulsing Hotspot Markers */}
+            {hotspots.map((hs) => (
+              <div
+                key={hs.id}
+                style={{ left: hs.coords.x, top: hs.coords.y }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group/pin z-20"
+                onClick={() => setSelectedHotspot(hs)}
+              >
+                <div className="relative flex items-center justify-center">
+                  <span className={`absolute w-8 h-8 rounded-full animate-ping opacity-75 ${hs.level === 'danger' ? 'bg-red-500' : hs.level === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`} />
+                  <span className={`relative w-4 h-4 rounded-full border-2 border-white shadow-lg ${hs.level === 'danger' ? 'bg-red-600' : hs.level === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`} />
+                </div>
+                {/* Tooltip on hover */}
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/pin:block bg-slate-900 text-white text-[11px] font-bold py-1.5 px-3 rounded-xl shadow-2xl whitespace-nowrap border border-white/20 z-30">
+                  <p className="font-extrabold">{hs.name}</p>
+                  <p className={`text-[10px] ${hs.level === 'danger' ? 'text-red-400' : hs.level === 'warning' ? 'text-amber-400' : 'text-emerald-400'}`}>{hs.status}</p>
+                </div>
+              </div>
+            ))}
+
+            {/* Map Legend */}
+            <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-white/10 flex items-center gap-4">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                <span className="text-[10px] font-bold text-slate-300">{g.highRisk}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <span className="text-[10px] font-bold text-slate-300">{g.modRisk}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-[10px] font-bold text-slate-300">{g.controlled}</span>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Live Surveillance Feed */}
+        <div className="col-span-12 lg:col-span-4 glass-card p-6 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-text-main flex items-center gap-2">
+                <Radio className="w-5 h-5 text-red-500 animate-pulse" />
+                {g.liveFeedTitle}
+              </h3>
+              <span className="text-[10px] font-black text-text-dim uppercase tracking-wider">UPDATED NOW</span>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-300">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400">{g.alert1Title}</span>
+                </div>
+                <p className="text-xs font-bold leading-relaxed">
+                  🔴 <strong className="font-extrabold">{g.alert1Title}:</strong> {g.alert1Body}
+                </p>
+                <span className="text-[10px] font-bold text-red-500/80 mt-2 block">Triggered 12m ago • Microclimate Humidity 74%</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">{g.alert2Title}</span>
+                </div>
+                <p className="text-xs font-bold leading-relaxed">
+                  🟡 <strong className="font-extrabold">{g.alert2Title}:</strong> {g.alert2Body}
+                </p>
+                <span className="text-[10px] font-bold text-amber-500/80 mt-2 block">Triggered 45m ago • Temp 27.4°C</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-300">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400">{g.alert3Title}</span>
+                </div>
+                <p className="text-xs font-bold leading-relaxed">
+                  ⚠️ <strong className="font-extrabold">{g.alert3Title}:</strong> {g.alert3Body}
+                </p>
+                <span className="text-[10px] font-bold text-red-500/80 mt-2 block">Triggered 1h ago • Bt Cotton Field Cluster</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-border-subtle">
+            <button
+              onClick={handleBroadcastAdvisory}
+              className="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+            >
+              <Send className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{g.broadcastBtn}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1274,13 +1624,12 @@ export default function Dashboard({
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState<string>(new Date().toLocaleTimeString());
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'smartfarm' | 'doctor' | 'mandi'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'smartfarm' | 'doctor' | 'geosurveillance'>('dashboard');
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isDataReady, setIsDataReady] = useState(false);
 
   const [userProfile, setUserProfile] = useState(() => {
-    const saved = localStorage.getItem('userProfile');
-    return saved ? JSON.parse(saved) : { username: "Farmer #2284", location: "Mangalore", majorCrop: "Arecanut" };
+    return { username: "Kisan Officer", location: "NASHIK, MH", majorCrop: "Grapes & Cotton" };
   });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState(userProfile);
@@ -1291,7 +1640,7 @@ export default function Dashboard({
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
     const saved = localStorage.getItem('agriNotifications');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try { return JSON.parse(saved); } catch (e) { }
     }
     return [
       {
@@ -1382,6 +1731,65 @@ export default function Dashboard({
     setNotifications([]);
   };
 
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your device or browser.");
+      return;
+    }
+    setIsDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          // Reverse geocode using free OpenStreetMap Nominatim API
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const geoData = await res.json();
+          const detectedCity = geoData.address?.city || geoData.address?.town || geoData.address?.village || geoData.address?.county || `Lat: ${latitude.toFixed(2)}, Lon: ${longitude.toFixed(2)}`;
+
+          setUserProfile(prev => {
+            const updated = { ...prev, location: detectedCity };
+            localStorage.setItem('userProfile', JSON.stringify(updated));
+            return updated;
+          });
+
+          // Show alert confirmation
+          setNotifications(prev => [
+            {
+              id: `loc-${Date.now()}`,
+              type: 'success',
+              category: 'system',
+              title: 'GPS Location Updated',
+              message: `Field location set to: ${detectedCity}`,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              read: false
+            },
+            ...prev
+          ]);
+        } catch (err) {
+          const fallbackLoc = `GPS (${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°)`;
+          setUserProfile(prev => {
+            const updated = { ...prev, location: fallbackLoc };
+            localStorage.setItem('userProfile', JSON.stringify(updated));
+            return updated;
+          });
+        } finally {
+          setIsDetectingLocation(false);
+        }
+      },
+      (error) => {
+        setIsDetectingLocation(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          alert("Location access denied. Please enable location permissions in your browser or phone settings to detect your farm location automatically.");
+        } else {
+          alert("Unable to retrieve GPS coordinates. Please check your device location settings.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const markSingleNotificationRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
@@ -1410,7 +1818,7 @@ export default function Dashboard({
           {[
             { id: 'dashboard', icon: LayoutDashboard, label: t.dashboard },
             { id: 'doctor', icon: Stethoscope, label: t.cropDoctor },
-            { id: 'mandi', icon: LayoutGrid, label: t.mandiBhav },
+            { id: 'geosurveillance', icon: Radar, label: t.geoSurveillance || "Geo-Surveillance" },
             { id: 'smartfarm', icon: Sprout, label: t.smartFarm },
           ].map((item) => (
             <button
@@ -1466,7 +1874,7 @@ export default function Dashboard({
 
   const t = translations[language] || translations.English;
 
-  const languages = ['English', 'Kannada', 'Hindi', 'Malayalam', 'Tamil', 'Tulu'];
+  const languages = ['English', 'Kannada', 'Hindi', 'Malayalam', 'Tamil', 'Tulu', 'Marathi', 'Bengali', 'Gujarati'];
 
   const fetchData = async () => {
     try {
@@ -1646,7 +2054,7 @@ export default function Dashboard({
               <button onClick={fetchData} title={t.refresh} className="p-2.5 lg:p-3.5 text-text-dim hover:text-primary hover:bg-primary/10 rounded-2xl transition-all active:scale-95 border border-border-subtle shadow-sm">
                 <RefreshCcw className="w-5 h-5 lg:w-6 lg:h-6" />
               </button>
-              
+
               <div className="relative">
                 <button
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -1728,24 +2136,22 @@ export default function Dashboard({
                               initial={{ opacity: 0, x: -10 }}
                               animate={{ opacity: 1, x: 0 }}
                               onClick={() => markSingleNotificationRead(notif.id)}
-                              className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative ${
-                                notif.read
-                                  ? 'bg-surface-hover/50 border-border-subtle opacity-75'
-                                  : 'bg-surface-hover border-primary/30 shadow-md'
-                              }`}
+                              className={`p-3.5 rounded-2xl border transition-all cursor-pointer relative ${notif.read
+                                ? 'bg-surface-hover/50 border-border-subtle opacity-75'
+                                : 'bg-surface-hover border-primary/30 shadow-md'
+                                }`}
                             >
                               <div className="flex gap-3">
-                                <div className={`p-2.5 rounded-xl shrink-0 h-fit ${
-                                  notif.type === 'danger' ? 'bg-red-500/10 text-red-500' :
+                                <div className={`p-2.5 rounded-xl shrink-0 h-fit ${notif.type === 'danger' ? 'bg-red-500/10 text-red-500' :
                                   notif.type === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-                                  notif.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
-                                  'bg-blue-500/10 text-blue-500'
-                                }`}>
+                                    notif.type === 'success' ? 'bg-emerald-500/10 text-emerald-500' :
+                                      'bg-blue-500/10 text-blue-500'
+                                  }`}>
                                   {notif.category === 'moisture' ? <Droplet className="w-4 h-4" /> :
-                                   notif.category === 'pest' ? <AlertTriangle className="w-4 h-4" /> :
-                                   notif.category === 'market' ? <TrendingUp className="w-4 h-4" /> :
-                                   notif.category === 'npk' ? <Sprout className="w-4 h-4" /> :
-                                   <Info className="w-4 h-4" />}
+                                    notif.category === 'pest' ? <AlertTriangle className="w-4 h-4" /> :
+                                      notif.category === 'market' ? <TrendingUp className="w-4 h-4" /> :
+                                        notif.category === 'npk' ? <Sprout className="w-4 h-4" /> :
+                                          <Info className="w-4 h-4" />}
                                 </div>
 
                                 <div className="flex-1 min-w-0">
@@ -1798,7 +2204,13 @@ export default function Dashboard({
                 <div className="grid grid-cols-12 gap-4 lg:gap-10">
                   {/* Weather Forecast - Prominent placement */}
                   <div className="col-span-12">
-                    <WeatherForecast t={t} weather={weather} />
+                    <WeatherForecast
+                      t={t}
+                      weather={weather}
+                      currentLocation={userProfile.location}
+                      onDetectLocation={handleDetectLocation}
+                      isDetectingLocation={isDetectingLocation}
+                    />
                   </div>
 
                   <motion.div
@@ -1899,23 +2311,47 @@ export default function Dashboard({
                         {t.tips}
                       </h3>
                       <div className="space-y-4">
-                        {getFarmerTips().map((tip, idx) => (
-                          <div
-                            key={idx}
-                            className={`p-5 rounded-2xl flex items-start gap-4 border transition-all hover:scale-[1.02] ${tip.type === 'danger' ? 'bg-red-50 border-red-100 text-red-700 shadow-sm shadow-red-100' :
-                              tip.type === 'warning' ? 'bg-amber-50 border-amber-100 text-amber-700 shadow-sm shadow-amber-100' :
-                                'bg-emerald-50 border-emerald-100 text-emerald-700 shadow-sm shadow-emerald-100'
-                              }`}
-                          >
-                            <div className={`p-1.5 rounded-lg ${tip.type === 'danger' ? 'bg-red-200' :
-                              tip.type === 'warning' ? 'bg-amber-200' :
-                                'bg-emerald-200'
-                              }`}>
-                              <Zap className="w-4 h-4" />
-                            </div>
-                            <p className="text-xs font-bold leading-relaxed tracking-wide">{tip.text}</p>
+                        <div className="p-5 rounded-2xl flex items-start gap-4 border transition-all hover:scale-[1.02] bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/40 text-red-700 dark:text-red-300 shadow-sm shadow-red-100">
+                          <div className="p-1.5 rounded-lg bg-red-200 dark:bg-red-900/50 shrink-0">
+                            <AlertTriangle className="w-5 h-5 text-red-700 dark:text-red-300" />
                           </div>
-                        ))}
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400 block mb-1">
+                              {language === 'Marathi' ? 'रोगाचा पूर्व इशारा' : language === 'Bengali' ? 'রোগের পূর্ব সতর্কবার্তা' : language === 'Gujarati' ? 'રોગની આગોતરી ચેતવણી' : language === 'Hindi' ? 'रोग की पूर्व चेतावनी' : language === 'Kannada' ? 'ರೋಗದ ಪೂರ್ವ ಮುನ್ನೆಚ್ಚರಿಕೆ' : 'Early Pest & Disease Warning'}
+                            </span>
+                            <p className="text-xs font-bold leading-relaxed tracking-wide">
+                              ⚠️ <strong className="font-extrabold">{language === 'Marathi' ? 'उच्च धोक्याची सूचना:' : language === 'Hindi' ? 'उच्च जोखिम चेतावनी:' : language === 'Gujarati' ? 'ઉચ્ચ જોખમ ચેતવણી:' : 'High Risk Warning:'}</strong> {
+                                language === 'Marathi' ? 'नाशिकमधील ७०% हवेतील आर्द्रतेमुळे द्राक्ष आणि कापसावर बुरशीजन्य रोगाचा प्रादुर्भाव वाढण्याची दाट शक्यता. ४८ तासांत बुरशीनाशकाची फवारणी करा.' :
+                                  language === 'Gujarati' ? 'નાસિકમાં ૭૦% ભેજને કારણે દ્રાક્ષ અને કપાસમાં ફૂગજન્ય રોગનું જોખમ. ૪૮ કલાકમાં જંતુનાશક છાંટો.' :
+                                    language === 'Hindi' ? 'नासिक में 70% आर्द्रता के कारण अंगूर और कपास में कवक रोग का उच्च जोखिम। 48 घंटे में कवकनाशी का छिड़काव करें।' :
+                                      language === 'Bengali' ? 'নাসিকে ৭০% আর্দ্রতার কারণে আঙুর ও তুলায় ছত্রাকজনিত রোগের ঝুঁকি। ৪৮ ঘণ্টার মধ্যে ছত্রাকনাশক স্প্রে করুন।' :
+                                        language === 'Kannada' ? 'ನಾಸಿಕ್‌ನಲ್ಲಿ ೭೦% ಆರ್ದ್ರತೆಯಿಂದಾಗಿ ದ್ರಾಕ್ಷಿ ಮತ್ತು ಹತ್ತಿಯಲ್ಲಿ ಶಿಲೀಂಧ್ರ ರೋಗದ ಹೆಚ್ಚಿನ ಅಪಾಯ. ೪೮ ಗಂಟೆಗಳಲ್ಲಿ ಕೀಟನಾಶಕ ಸಿಂಪಡಿಸಿ.' :
+                                          'Elevated humidity (70%) in Nashik creates optimal spore conditions for Fungal Blight in Grapes & Cotton. Preventive fungicide spray recommended within 48h.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-5 rounded-2xl flex items-start gap-4 border transition-all hover:scale-[1.02] bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 shadow-sm shadow-amber-100">
+                          <div className="p-1.5 rounded-lg bg-amber-200 dark:bg-amber-900/50 shrink-0">
+                            <Zap className="w-5 h-5 text-amber-700 dark:text-amber-300" />
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400 block mb-1">
+                              {language === 'Marathi' ? 'किड सर्वेक्षण सल्ला' : language === 'Hindi' ? 'कीट निगरानी सलाह' : language === 'Gujarati' ? 'જીવાત નિરીક્ષણ સલાહ' : 'Pest Surveillance Advisory'}
+                            </span>
+                            <p className="text-xs font-bold leading-relaxed tracking-wide">
+                              {
+                                language === 'Marathi' ? 'निफाड आणि दिंडोरी भागात गुलाबी बोंड अळीचा प्रादुर्भाव. प्रति एकर ५ कामगंध सापळे त्वरित लावा.' :
+                                  language === 'Gujarati' ? 'નિફાડ વિસ્તારમાં ગુલાબી ઈયળનો ઉપદ્રવ. એકર દીઠ ૫ ફેરોમોન ટ્રેપ ગોઠવો.' :
+                                    language === 'Hindi' ? 'निफाड़ में गुलाबी सुंडी का प्रकोप। प्रति एकड़ 5 फेरोमोन ट्रैप लगाएं।' :
+                                      language === 'Bengali' ? 'নিফাড় এলাকায় গোলাপী বোলওয়ার্মের প্রাদুর্ভাব। প্রতি একরে ৫টি ফেরোমোন ফাঁদ ব্যবহার করুন।' :
+                                        language === 'Kannada' ? 'ನಿಫಾಡ್‌ನಲ್ಲಿ ಗುಲಾಬಿ ಕಾಯಿ ಹುಳುವಿನ ಭಾದೆ. ಎಕರೆಗೆ ೫ ಫೆರಮೋನ್ ಬಲೆಗಳನ್ನು ಹಾಕಿ.' :
+                                          'Pink Bollworm emergence monitored across Niphad & Dindori clusters. Deploy 5 pheromone traps per acre immediately.'
+                              }
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
@@ -1925,9 +2361,9 @@ export default function Dashboard({
               <motion.div key="smartfarm" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col">
                 <SmartFarm data={data} history={history} sevenDayHistory={sevenDayHistory} t={t} weather={weather} language={language} />
               </motion.div>
-            ) : activeTab === 'mandi' ? (
-              <motion.div key="mandi" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col">
-                <MandiBhav t={t} language={language} />
+            ) : activeTab === 'geosurveillance' ? (
+              <motion.div key="geosurveillance" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col">
+                <GeoSurveillance t={t} language={language} />
               </motion.div>
             ) : (
               <motion.div key="doctor" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 flex flex-col">
@@ -1977,12 +2413,49 @@ export default function Dashboard({
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-text-dim uppercase tracking-widest mb-2">{t.location || "Location"}</label>
-                  <input
-                    type="text"
-                    value={editingProfile.location}
-                    onChange={(e) => setEditingProfile({ ...editingProfile, location: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-text-main font-bold focus:outline-none focus:border-primary transition-colors"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={editingProfile.location}
+                      onChange={(e) => setEditingProfile({ ...editingProfile, location: e.target.value })}
+                      placeholder="e.g. Mangalore, Shimoga, Hassan..."
+                      className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-text-main font-bold focus:outline-none focus:border-primary transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!navigator.geolocation) {
+                          alert("Geolocation not supported by device.");
+                          return;
+                        }
+                        setIsDetectingLocation(true);
+                        navigator.geolocation.getCurrentPosition(
+                          async (pos) => {
+                            try {
+                              const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+                              const g = await res.json();
+                              const city = g.address?.city || g.address?.town || g.address?.village || g.address?.county || `${pos.coords.latitude.toFixed(2)}, ${pos.coords.longitude.toFixed(2)}`;
+                              setEditingProfile(p => ({ ...p, location: city }));
+                            } catch (e) {
+                              setEditingProfile(p => ({ ...p, location: `GPS (${pos.coords.latitude.toFixed(2)}°, ${pos.coords.longitude.toFixed(2)}°)` }));
+                            } finally {
+                              setIsDetectingLocation(false);
+                            }
+                          },
+                          (err) => {
+                            setIsDetectingLocation(false);
+                            alert("Location access denied or unavailable. Please enable device GPS permissions.");
+                          }
+                        );
+                      }}
+                      disabled={isDetectingLocation}
+                      className="px-4 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-xl font-bold text-xs flex items-center gap-2 transition-all shrink-0"
+                      title="Auto-detect current GPS location"
+                    >
+                      {isDetectingLocation ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+                      <span className="hidden sm:inline">GPS</span>
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-text-dim uppercase tracking-widest mb-2">{t.majorCrop || "Major Crop"}</label>

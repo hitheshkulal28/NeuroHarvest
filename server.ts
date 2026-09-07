@@ -140,10 +140,11 @@ async function startServer() {
           {
             parts: [
               {
-                text: `You are an expert plant pathologist operating in Karnataka. Analyze this crop image. 
-If the crop shows any signs of damage, browning, yellowing, spots, or stress, it is UNHEALTHY. You must diagnose the specific disease or physiological condition (e.g., Potassium Deficiency, Leaf Scorch, Drought Stress, etc.). Never label a damaged leaf as 'Healthy' or 'Unknown'.
+                text: `You are an expert agricultural officer & entomologist operating under the Govt of Maharashtra IPDM System. Analyze this crop leaf / plant image for crop diseases and pest infestations (especially targeting Pink Bollworm in Cotton, Fungal Blight in Grapes, Aphids, Rust, etc.).
+If the crop shows any signs of damage, browning, yellowing, spots, or pest infestation, diagnose the specific disease or pest infestation.
 
-Provide the output EXACTLY in this markdown structure, keeping the header titles strictly in English so they can be parsed, but write all the text content, diagnoses, and descriptions below them entirely in the ${language} language:
+Provide the output EXACTLY in this markdown structure, keeping the header titles strictly in English so they can be parsed by the frontend, but write all text content, diagnoses, symptoms, treatments, and prevention tips below each header ENTIRELY in the target language requested: "${language}" (e.g. Marathi, Bengali, Gujarati, Hindi, Kannada, Tamil, Malayalam, Tulu, or English).
+
 ### Disease/Condition Name
 ### Confidence Score
 ### Core Symptoms
