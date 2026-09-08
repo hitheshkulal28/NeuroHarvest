@@ -14,6 +14,7 @@ import {
   Camera,
   CheckCircle2,
   AlertTriangle,
+  ShieldAlert,
   Info,
   Zap,
   Download,
@@ -642,7 +643,7 @@ const CropDoctor = ({ language, t, diagnosisHistory, setDiagnosisHistory }: { la
           </div>
         ) : (
           <div className="glass-card overflow-hidden !p-0 h-[500px]">
-            {previewUrl && <img src={previewUrl} className="w-full h-full object-cover" alt="Leaf" />}
+            {previewUrl && <img src={previewUrl} className="w-full h-full object-cover" alt="Crop Image" />}
           </div>
         )}
 
@@ -652,11 +653,24 @@ const CropDoctor = ({ language, t, diagnosisHistory, setDiagnosisHistory }: { la
               <div className="glass-card p-6">
                 <div className="flex justify-between items-center mb-6">
                   <p className="text-[10px] font-extrabold text-text-main uppercase tracking-[0.2em]">{t.diagnosis}</p>
-                  <div className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase tracking-wider">
-                    {confidenceScore} {t.confidence}
+                  <div className="flex items-center gap-2">
+                    <div className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-bold uppercase tracking-wider">
+                      {confidenceScore} {t.confidence}
+                    </div>
+                    {parseInt(confidenceScore) < 75 && (
+                      <span className="px-3 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 border border-purple-500/30">
+                        <ShieldAlert className="w-3 h-3" /> Human-in-the-Loop Escalated
+                      </span>
+                    )}
                   </div>
                 </div>
                 <h3 className="text-2xl font-bold text-text-main mb-6">{diseaseName || 'Healthy/Unknown'}</h3>
+                {parseInt(confidenceScore) < 75 && (
+                  <div className="p-4 mb-4 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/40 text-purple-800 dark:text-purple-300 text-xs font-bold flex items-center justify-between">
+                    <span>⚠️ Low confidence diagnosis (&lt;75%). Routed automatically to Nashik District Kisan Officer for expert review.</span>
+                    <span className="px-2 py-0.5 bg-purple-600 text-white rounded text-[9px] uppercase font-black tracking-widest shrink-0 ml-2">Ticket #KS-8492</span>
+                  </div>
+                )}
                 <button
                   onClick={() => speak(`${diseaseName}. Symptoms: ${coreSymptoms}. Treatment: ${immediateTreatment}`, language)}
                   className="flex items-center gap-2 text-blue-800 font-bold text-sm hover:underline"
@@ -1874,7 +1888,7 @@ export default function Dashboard({
 
   const t = translations[language] || translations.English;
 
-  const languages = ['English', 'Kannada', 'Hindi', 'Malayalam', 'Tamil', 'Tulu', 'Marathi', 'Bengali', 'Gujarati'];
+  const languages = ['English', 'Marathi', 'Kannada', 'Hindi', 'Malayalam', 'Tamil', 'Tulu', 'Bengali', 'Gujarati'];
 
   const fetchData = async () => {
     try {

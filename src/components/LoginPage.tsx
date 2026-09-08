@@ -28,7 +28,7 @@ const LoginPage = ({ onLogin, language, setLanguage, isDarkMode, toggleDarkMode 
   const [phone, setPhone] = useState("");
 
   const t = translations[language] || translations.English;
-  const languages = ['English', 'Kannada', 'Hindi', 'Malayalam', 'Tamil', 'Tulu', 'Marathi', 'Bengali', 'Gujarati'];
+  const languages = ['English', 'Marathi', 'Kannada', 'Hindi', 'Malayalam', 'Tamil', 'Tulu', 'Bengali', 'Gujarati'];
 
   const getAuthAlertMessage = (key: string, lang: string) => {
     const dicts: Record<string, Record<string, string>> = {
