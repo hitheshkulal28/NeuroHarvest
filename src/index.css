@@ -1,5 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
+
+/* Leaflet map overrides for dark glassmorphism theme */
+.leaflet-container {
+  background: #09131e !important;
+  border-radius: 1rem;
+  z-index: 0;
+}
+.leaflet-tile-pane {
+  filter: saturate(0.6) brightness(0.7) hue-rotate(160deg);
+}
+.dark .leaflet-tile-pane {
+  filter: saturate(0.5) brightness(0.4) hue-rotate(170deg);
+}
+.leaflet-control-zoom {
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+.leaflet-control-zoom a {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #10b981 !important;
+  border: none !important;
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(16, 185, 129, 0.2) !important;
+}
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  border-radius: 16px !important;
+  color: #f8fafc !important;
+  backdrop-filter: blur(12px);
+}
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+}
+.leaflet-attribution-flag { display: none !important; }
 
 @custom-variant dark (&:is(.dark *));
 

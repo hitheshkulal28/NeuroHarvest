@@ -1224,6 +1224,54 @@ const SmartFarm = ({ data, history, sevenDayHistory, t, weather, language }: { d
   );
 };
 
+// ─── Real GIS Leaflet Map Component ──────────────────────────────────────────
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+
+const LeafletMap = ({ hotspots }: { hotspots: any[] }) => {
+  const getColor = (level: string) =>
+    level === 'danger' ? '#ef4444' : level === 'warning' ? '#f59e0b' : '#10b981';
+
+  return (
+    <MapContainer
+      center={[19.7515, 75.7139]}
+      zoom={6}
+      scrollWheelZoom={false}
+      style={{ width: '100%', height: '420px', borderRadius: '16px', zIndex: 0 }}
+      className="z-0"
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      {hotspots.map((hs) => (
+        <CircleMarker
+          key={hs.id}
+          center={[hs.lat, hs.lng]}
+          radius={hs.affectedFarms > 0 ? Math.max(10, Math.min(30, hs.affectedFarms / 1.5)) : 10}
+          pathOptions={{
+            color: getColor(hs.level),
+            fillColor: getColor(hs.level),
+            fillOpacity: 0.65,
+            weight: 2
+          }}
+        >
+          <Popup>
+            <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', minWidth: '200px' }}>
+              <div style={{ fontWeight: 900, fontSize: '13px', marginBottom: '6px', color: getColor(hs.level) }}>
+                {hs.name}
+              </div>
+              <div style={{ fontSize: '11px', marginBottom: '4px', fontWeight: 700 }}>🌾 {hs.crop}</div>
+              <div style={{ fontSize: '11px', marginBottom: '4px' }}>⚠️ {hs.status}</div>
+              <div style={{ fontSize: '11px' }}>🌡️ Humidity: {hs.humidity} · Farms: {hs.affectedFarms}</div>
+            </div>
+          </Popup>
+        </CircleMarker>
+      ))}
+    </MapContainer>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const GeoSurveillance = ({ t, language }: { t: any, language: string }) => {
   const [broadcastSent, setBroadcastSent] = useState(false);
   const [selectedHotspot, setSelectedHotspot] = useState<any>(null);
@@ -1382,7 +1430,8 @@ const GeoSurveillance = ({ t, language }: { t: any, language: string }) => {
       id: 'nashik',
       name: 'Nashik Cluster',
       district: 'Nashik',
-      coords: { x: '28%', y: '40%' },
+      lat: 20.0059,
+      lng: 73.7898,
       status: 'High Risk - Fungal Spores Detected',
       level: 'danger',
       crop: 'Grapes & Cotton',
@@ -1393,7 +1442,8 @@ const GeoSurveillance = ({ t, language }: { t: any, language: string }) => {
       id: 'pune',
       name: 'Baramati / Pune',
       district: 'Pune',
-      coords: { x: '35%', y: '68%' },
+      lat: 18.1518,
+      lng: 74.5815,
       status: 'Moderate Risk - Aphid Migration',
       level: 'warning',
       crop: 'Sugarcane & Vegetables',
@@ -1404,7 +1454,8 @@ const GeoSurveillance = ({ t, language }: { t: any, language: string }) => {
       id: 'nagpur',
       name: 'Nagpur East',
       district: 'Nagpur',
-      coords: { x: '82%', y: '30%' },
+      lat: 21.1458,
+      lng: 79.0882,
       status: 'Controlled - Healthy',
       level: 'success',
       crop: 'Citrus (Oranges)',
@@ -1415,12 +1466,37 @@ const GeoSurveillance = ({ t, language }: { t: any, language: string }) => {
       id: 'sambhajinagar',
       name: 'Chhatrapati Sambhajinagar',
       district: 'Chhatrapati Sambhajinagar',
-      coords: { x: '48%', y: '45%' },
+      lat: 19.8762,
+      lng: 75.3433,
       status: 'Pest Warning - Pink Bollworm',
       level: 'danger',
       crop: 'Bt Cotton',
       affectedFarms: 35,
       humidity: '68%'
+    },
+    {
+      id: 'amravati',
+      name: 'Amravati',
+      district: 'Amravati',
+      lat: 20.9374,
+      lng: 77.7796,
+      status: 'Moderate Risk - Leaf Rust',
+      level: 'warning',
+      crop: 'Soybean & Cotton',
+      affectedFarms: 11,
+      humidity: '61%'
+    },
+    {
+      id: 'kolhapur',
+      name: 'Kolhapur',
+      district: 'Kolhapur',
+      lat: 16.7050,
+      lng: 74.2433,
+      status: 'Controlled - Healthy',
+      level: 'success',
+      crop: 'Sugarcane',
+      affectedFarms: 0,
+      humidity: '55%'
     }
   ];
 
@@ -1472,79 +1548,34 @@ const GeoSurveillance = ({ t, language }: { t: any, language: string }) => {
       </div>
 
       <div className="grid grid-cols-12 gap-6 lg:gap-8">
-        {/* Visual Simulated Map Card */}
+        {/* Real GIS Leaflet Map Card */}
         <div className="col-span-12 lg:col-span-8 glass-card p-6 lg:p-8 flex flex-col justify-between relative overflow-hidden min-h-[500px]">
           <div className="flex items-center justify-between mb-4 z-10">
             <div className="flex items-center gap-2">
               <Map className="w-5 h-5 text-primary" />
-              <h3 className="text-sm font-black text-text-main uppercase tracking-wider">Maharashtra District Hotspot Map</h3>
+              <h3 className="text-sm font-black text-text-main uppercase tracking-wider">{g.mapTitle}</h3>
             </div>
             <span className="text-[10px] font-bold text-text-dim uppercase tracking-widest bg-surface-hover px-3 py-1 rounded-full border border-border-subtle">
-              Center: 19.7515° N, 75.7139° E
+              Centre: 19.7515° N, 75.7139° E
             </span>
           </div>
 
-          {/* Interactive Styled Map View */}
-          <div className="relative w-full h-[380px] lg:h-[420px] rounded-2xl bg-[#09131e] border border-white/10 overflow-hidden flex items-center justify-center group">
-            {/* Grid Pattern overlay for radar effect */}
-            <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
+          {/* Real Leaflet Map */}
+          <LeafletMap hotspots={hotspots} />
 
-            {/* Radar Sweeping Animation */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-r from-primary/10 to-transparent rounded-full animate-spin origin-center pointer-events-none opacity-30" style={{ animationDuration: '10s' }} />
-
-            {/* Stylized Maharashtra District Outline SVG */}
-            <svg viewBox="0 0 800 500" className="w-full h-full object-contain p-6 opacity-35 filter drop-shadow-[0_0_12px_rgba(16,185,129,0.3)]">
-              <path
-                d="M 150 180 Q 220 120 350 140 T 550 100 T 720 200 T 680 320 T 500 380 T 320 400 T 180 340 T 120 250 Z"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="2.5"
-                strokeDasharray="6 4"
-              />
-              <path
-                d="M 220 160 L 320 220 L 420 200 L 520 260 L 620 220"
-                fill="none"
-                stroke="#334155"
-                strokeWidth="1.5"
-              />
-            </svg>
-
-            {/* Pulsing Hotspot Markers */}
-            {hotspots.map((hs) => (
-              <div
-                key={hs.id}
-                style={{ left: hs.coords.x, top: hs.coords.y }}
-                className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group/pin z-20"
-                onClick={() => setSelectedHotspot(hs)}
-              >
-                <div className="relative flex items-center justify-center">
-                  <span className={`absolute w-8 h-8 rounded-full animate-ping opacity-75 ${hs.level === 'danger' ? 'bg-red-500' : hs.level === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
-                    }`} />
-                  <span className={`relative w-4 h-4 rounded-full border-2 border-white shadow-lg ${hs.level === 'danger' ? 'bg-red-600' : hs.level === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'
-                    }`} />
-                </div>
-                {/* Tooltip on hover */}
-                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/pin:block bg-slate-900 text-white text-[11px] font-bold py-1.5 px-3 rounded-xl shadow-2xl whitespace-nowrap border border-white/20 z-30">
-                  <p className="font-extrabold">{hs.name}</p>
-                  <p className={`text-[10px] ${hs.level === 'danger' ? 'text-red-400' : hs.level === 'warning' ? 'text-amber-400' : 'text-emerald-400'}`}>{hs.status}</p>
-                </div>
-              </div>
-            ))}
-
-            {/* Map Legend */}
-            <div className="absolute bottom-4 left-4 z-20 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-white/10 flex items-center gap-4">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                <span className="text-[10px] font-bold text-slate-300">{g.highRisk}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <span className="text-[10px] font-bold text-slate-300">{g.modRisk}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-[10px] font-bold text-slate-300">{g.controlled}</span>
-              </div>
+          {/* Map Legend */}
+          <div className="flex items-center gap-4 mt-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+              <span className="text-[10px] font-bold text-text-dim">{g.highRisk}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span className="text-[10px] font-bold text-text-dim">{g.modRisk}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+              <span className="text-[10px] font-bold text-text-dim">{g.controlled}</span>
             </div>
           </div>
         </div>
